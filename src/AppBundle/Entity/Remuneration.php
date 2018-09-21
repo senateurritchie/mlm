@@ -1,0 +1,253 @@
+<?php
+
+namespace AppBundle\Entity;
+
+use Doctrine\ORM\Mapping as ORM;
+use Gedmo\Mapping\Annotation as Gedmo;
+
+/**
+ * Remuneration
+ *
+ * @ORM\Table(name="remuneration", options={"comment":"les gains générés lors d'un achat ou d'un bonus"})
+ * @ORM\Entity(repositoryClass="AppBundle\Repository\RemunerationRepository")
+ */
+class Remuneration
+{
+    /**
+    * @var int
+    *
+    * @ORM\Column(name="id", type="integer")
+    * @ORM\Id
+    * @ORM\GeneratedValue(strategy="AUTO")
+    */
+    private $id;
+
+    /**
+    * @var AppBundle\Entity\RemunerationType
+    * @ORM\ManyToOne(targetEntity="AppBundle\Entity\RemunerationType")
+    * @ORM\JoinColumn(onDelete="SET NULL")
+    */
+    private $type;
+
+    /**
+    * @var AppBundle\Entity\Membre
+    * @ORM\ManyToOne(targetEntity="AppBundle\Entity\Membre")
+    * @ORM\JoinColumn(onDelete="CASCADE")
+    */
+    private $membre;
+
+    /**
+    * @var AppBundle\Entity\ForeverPurchase
+    * @ORM\ManyToOne(targetEntity="AppBundle\Entity\ForeverPurchase")
+    * @ORM\JoinColumn(onDelete="CASCADE", nullable=true)
+    */
+    private $purchase;
+    
+    /**
+    * @var float
+    *
+    * @ORM\Column(name="amount", type="float")
+    */
+    private $amount;
+
+    /**
+    * @var string
+    *
+    * @ORM\Column(name="state", type="string", length=15, options={"comment":"le type type de catalogue soit ESA ou FSA"}, columnDefinition="ENUM('pending','revoked','collected','uncollected')")
+    */
+    private $state = 'pending';
+
+    /**
+    * @var string
+    *
+    * @ORM\Column(name="token", type="string", length=64, unique=true)
+    */
+    private $token;
+
+    /**
+    * @var \DateTime
+    *
+    * @Gedmo\Timestampable(on="create")
+    * @ORM\Column(name="create_at", type="datetime")
+    */
+    private $createAt;
+
+
+    /**
+    * Get id
+    *
+    * @return int
+    */
+    public function getId()
+    {
+        return $this->id;
+    }
+
+    /**
+     * Set amount
+     *
+     * @param float $amount
+     *
+     * @return Remuneration
+     */
+    public function setAmount($amount)
+    {
+        $this->amount = $amount;
+
+        return $this;
+    }
+
+    /**
+     * Get amount
+     *
+     * @return float
+     */
+    public function getAmount()
+    {
+        return $this->amount;
+    }
+
+    /**
+     * Set state
+     *
+     * @param string $state
+     *
+     * @return Remuneration
+     */
+    public function setState($state)
+    {
+        $this->state = $state;
+
+        return $this;
+    }
+
+    /**
+     * Get state
+     *
+     * @return string
+     */
+    public function getState()
+    {
+        return $this->state;
+    }
+
+    /**
+     * Set token
+     *
+     * @param string $token
+     *
+     * @return Remuneration
+     */
+    public function setToken($token)
+    {
+        $this->token = $token;
+
+        return $this;
+    }
+
+    /**
+     * Get token
+     *
+     * @return string
+     */
+    public function getToken()
+    {
+        return $this->token;
+    }
+
+    /**
+     * Set createAt
+     *
+     * @param \DateTime $createAt
+     *
+     * @return Remuneration
+     */
+    public function setCreateAt($createAt)
+    {
+        $this->createAt = $createAt;
+
+        return $this;
+    }
+
+    /**
+     * Get createAt
+     *
+     * @return \DateTime
+     */
+    public function getCreateAt()
+    {
+        return $this->createAt;
+    }
+
+    /**
+     * Set type
+     *
+     * @param \AppBundle\Entity\RemunerationType $type
+     *
+     * @return Remuneration
+     */
+    public function setType(\AppBundle\Entity\RemunerationType $type = null)
+    {
+        $this->type = $type;
+
+        return $this;
+    }
+
+    /**
+     * Get type
+     *
+     * @return \AppBundle\Entity\RemunerationType
+     */
+    public function getType()
+    {
+        return $this->type;
+    }
+
+    /**
+     * Set membre
+     *
+     * @param \AppBundle\Entity\Membre $membre
+     *
+     * @return Remuneration
+     */
+    public function setMembre(\AppBundle\Entity\Membre $membre = null)
+    {
+        $this->membre = $membre;
+
+        return $this;
+    }
+
+    /**
+     * Get membre
+     *
+     * @return \AppBundle\Entity\Membre
+     */
+    public function getMembre()
+    {
+        return $this->membre;
+    }
+
+    /**
+     * Set purchase
+     *
+     * @param \AppBundle\Entity\ForeverPurchase $purchase
+     *
+     * @return Remuneration
+     */
+    public function setPurchase(\AppBundle\Entity\ForeverPurchase $purchase = null)
+    {
+        $this->purchase = $purchase;
+
+        return $this;
+    }
+
+    /**
+     * Get purchase
+     *
+     * @return \AppBundle\Entity\ForeverPurchase
+     */
+    public function getPurchase()
+    {
+        return $this->purchase;
+    }
+}

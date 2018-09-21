@@ -1,0 +1,90 @@
+<?php
+
+namespace AppBundle\Entity;
+
+use Doctrine\ORM\Mapping as ORM;
+
+/**
+ * ForeverPurchase
+ *
+ * @ORM\Table(name="forever_purchase")
+ * @ORM\Entity(repositoryClass="AppBundle\Repository\ForeverPurchaseRepository")
+ */
+class ForeverPurchase
+{
+    /**
+     * @var int
+     *
+     * @ORM\Column(name="id", type="integer")
+     * @ORM\Id
+     * @ORM\GeneratedValue(strategy="AUTO")
+     */
+    private $id;
+
+    /**
+    * @var AppBundle\Entity\Membre
+    *
+    * @ORM\ManyToOne(targetEntity="AppBundle\Entity\Membre")
+    * @ORM\JoinColumn(nullable=true, onDelete="CASCADE")
+    */
+    private $membre;
+
+    /**
+    * @var AppBundle\Entity\ForeverPack
+    *
+    * @ORM\ManyToOne(targetEntity="AppBundle\Entity\ForeverPack")
+    * @ORM\JoinColumn(nullable=true, onDelete="CASCADE")
+    */
+    private $pack;
+
+    /**
+    * @var AppBundle\Entity\Membre
+    *
+    * @ORM\ManyToOne(targetEntity="AppBundle\Entity\Membre")
+    * @ORM\JoinColumn(nullable=true, onDelete="SET NULL")
+    */
+    private $admin;
+
+    /**
+     * @var \DateTime
+     *
+     * @ORM\Column(name="create_at", type="datetime")
+     */
+    private $createAt;
+
+
+    /**
+     * Get id
+     *
+     * @return int
+     */
+    public function getId()
+    {
+        return $this->id;
+    }
+
+    /**
+     * Set createAt
+     *
+     * @param \DateTime $createAt
+     *
+     * @return ForeverPurchase
+     */
+    public function setCreateAt($createAt)
+    {
+        $this->createAt = $createAt;
+
+        return $this;
+    }
+
+    /**
+     * Get createAt
+     *
+     * @return \DateTime
+     */
+    public function getCreateAt()
+    {
+        return $this->createAt;
+    }
+}
+
