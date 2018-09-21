@@ -1,2 +1,6 @@
 # mlm
-Systeme de marketing de reseau avec gestion de gains sur achats et bonus sur 3 générations, aucune limite de profondeur de l'arbre, ni de fils par noeud
+Systeme de marketing de reseau avec:
+* gestion de gains sur achats
+* bonus sur 3 générations
+
+Aucune limite de profondeur de la matrice, et le nombre de fils par noeud est illimité.
