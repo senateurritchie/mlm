@@ -39,3 +39,13 @@ monolog:
 
 #swiftmailer:
 #    delivery_addresses: ['me@example.com']
+
+parameters:
+    admin:
+        name: 'webmaster'
+        email: 'zakeszako@yahoo.fr'
+    app.site: 
+        name:   'BB MLM'
+        email:  'webmaster@bbmlm.ci'
+        url:    'http://bbmlm.local'
+    

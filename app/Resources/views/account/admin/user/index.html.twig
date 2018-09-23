@@ -1,0 +1,225 @@
+{% extends 'account/base.html.twig' %}
+
+{% form_theme form 'bootstrap_3_layout.html.twig' %}
+
+{% set use_modal = 'insert' %}
+
+
+{% block stylesheets %}
+	{{ parent() }}
+
+	<style>
+		.ml-1{
+			margin-left: 0.25rem !important;
+		}
+		.ml-2{
+			margin-left: 0.5rem !important;
+		}
+
+		#user-loading{
+			display: none;
+		}
+
+		#current-widget-user{
+			display: none;
+		}
+
+		
+
+		#right-section.user-loading #user-loading{
+			display: block;
+		}
+
+		#right-section.user-active #current-widget-user{
+			display: block;
+		}
+
+		#right-section.user-active #users-secondary-box,
+		#right-section.user-loading #users-secondary-box,
+		#right-section.user-loading #current-widget-user{
+			display: none;
+		}
+
+		.widget-user-privileges > div {
+			margin-right: 2px;
+		}
+
+		#current-widget-user #spinner{
+			display: none;
+		}
+
+		#current-widget-user.updating #spinner{
+			display: block;
+		}
+
+		.modal .overlay{
+			display: none;
+		}
+
+		.modal.updating .overlay{
+			display: flex;
+			position: absolute;
+			top: 0;
+			bottom: 0;
+			left: 0;
+			right: 0;
+			background: rgba(255,255,255,.4);
+			flex-direction: column;
+			justify-content: center;
+			align-items: center; 
+		}
+
+		.parrain-code{
+			border: 1px solid #dd4b39 !important;
+		}
+	</style>
+
+{% endblock %}
+
+{% block header_content %}
+	Les Utilisateurs <small>gestions des utilisateurs de la plateforme</small>
+{% endblock %}
+
+
+{% block body_content %}
+	
+	{{ include('account/admin/modal-info.html.twig') }}
+
+	{# boite de dialogue pour la modification de fiche #}
+    <div id="modal-update-area"></div>
+
+	{# boite de dialogue pour insertion #}
+    <div id="modal-add-area">
+	    {{ include('account/admin/user/selected-view.html.twig') }}
+    </div>
+
+	{# boite de dialogue pour le chargement #}
+    <div class="modal fade" id="modal-loading">
+    	<div class="modal-dialog">
+        	<div class="modal-content" style="background:none;box-shadow:none">
+          		<div class="modal-body text-center" style="background:none;color:#ffffff">
+					<i  class="fa fa-spinner fa-spin fa-5x text-white"></i>
+          		</div>
+        	</div>
+      	</div>
+    </div>
+
+    <!-- insertion par metadonnées excel -->
+    <div class="modal modal-primary fade" id="modal-metadata">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">×</span>
+                    </button>
+                    <h4 class="modal-title">Insertion par metadonnées...</h4>
+                </div>
+                
+                <form action="{{ path('admin_user_metadata_upload') }}" enctype="multipart/form-data" method="POST">
+                    <div class="modal-body">
+                        <input name="file" type="file" accept="application/zip"  >
+                    </div>
+
+                    <div class="modal-footer">
+                        
+                        <button type="button" class="btn btn-outline pull-left" data-dismiss="modal">
+                            Annuler
+                        </button>
+
+                        <button type="submit" class="btn btn-outline">Enregistrer</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+	<div class="row">
+    	<div class="col-xs-12 col-md-12">
+
+    		<div class="row">
+    			<div class="col-md-12">
+    				<button  data-toggle="modal" data-backdrop="static" data-target="#modal-insert" class="btn btn-sm bg-purple">
+		  				<i class="fa fa-plus"></i> Nouveau
+		  			</button>
+
+		  			<button  data-toggle="modal" data-backdrop="static" data-target="#modal-metadata" class="btn btn-sm bg-purple">
+		  				<i class="fa fa-plus"></i> Metadonnées
+		  			</button>
+    			</div>
+    		</div>
+
+    		<hr>
+
+    		{% for notice in app.flashes('notice-success') %}
+                <div class="alert alert-info alert-dismissible">
+	                <button type="button" class="close" data-dismiss="alert" aria-hidden="true">×</button>
+	                <h4><i class="icon fa fa-check"></i> Félicitation!</h4>
+	                {{notice}}
+	            </div>
+            {% endfor %}
+
+            {% for notice in app.flashes('notice-error') %}
+                <div class="alert alert-danger alert-dismissible">
+	                <button type="button" class="close" data-dismiss="alert" aria-hidden="true">×</button>
+	                <h4><i class="icon fa fa-check"></i> Attention!</h4>
+	                {{ notice }}
+	            </div>
+            {% endfor %}
+
+        	<div class="box box-primary">
+            	<div class="box-header">
+              		<h3 class="box-title">Tout les comptes</h3>
+
+              		<div class="box-tools">
+              			<form action="" method="get">
+	                		<div class="input-group input-group-sm" style="width: 200px;">
+	                 			<input type="text" name="q" class="form-control pull-right" placeholder="Saisir un nom..." value="{{ app.request.query.get('q') }}">
+
+	                  			<div class="input-group-btn">
+	                    			<button type="submit" class="btn bg-purple">
+	                    				<i class="fa fa-search"></i>
+	                    			</button>
+	                  			</div>
+	                		</div>
+	                	</form>
+              		</div>
+            	</div>
+            
+            	<!-- /.box-header -->
+            	<div class="box-body table-responsive no-padding" id="data-container">
+              		<table class="table table-hover">
+		                <thead>
+		                	<tr>
+		                 		<th width="50">Image</th>
+		                 		<th>Nom & Prénom</th>
+		                 		<th>Date de Naissance</th>
+		                 		<th>Adresse email</th>
+		                 		<th>Corporation</th>
+		                  		<th>Ajouté le</th>
+		                  		<th>Etat</th>
+		                	</tr>
+	              		</thead>
+
+	              		<tbody>
+	              			{{ include('account/admin/user/item-render.html.twig') }}
+	              		</tbody>
+              		</table>
+            	</div>
+            </div>
+        </div>
+    </div>
+
+    <script type="text/template">
+    </script>
+
+{% endblock %}
+
+{% block javascripts %}
+	{{ parent() }}
+
+	<script src="{{ asset('js/admin/manager.js') }}"></script>
+	<script src="{{ asset('js/admin/user/manager.js') }}"></script>
+	<script src="{{ asset('js/admin/user/index.js') }}"></script>
+	
+{% endblock %}
+

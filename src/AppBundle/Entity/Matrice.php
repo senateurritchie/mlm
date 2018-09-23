@@ -30,13 +30,6 @@ class Matrice
     private $membre;
 
     /**
-    * @var AppBundle\Entity\Membre
-    * @ORM\ManyToOne(targetEntity="AppBundle\Entity\Membre")
-    * @ORM\JoinColumn(nullable=true, onDelete="SET NULL")
-    */
-    private $parrain;
-
-    /**
     * @var int
     *
     * @ORM\Column(name="left_ind", type="integer", nullable=true, options={"comment":"l'indice gauche du noeud"})
@@ -194,29 +187,5 @@ class Matrice
     public function getMembre()
     {
         return $this->membre;
-    }
-
-    /**
-     * Set parrain
-     *
-     * @param \AppBundle\Entity\Membre $parrain
-     *
-     * @return Matrice
-     */
-    public function setParrain(\AppBundle\Entity\Membre $parrain = null)
-    {
-        $this->parrain = $parrain;
-
-        return $this;
-    }
-
-    /**
-     * Get parrain
-     *
-     * @return \AppBundle\Entity\Membre
-     */
-    public function getParrain()
-    {
-        return $this->parrain;
     }
 }

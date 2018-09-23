@@ -1,0 +1,38 @@
+{% for item in users %}
+	<tr class="data-item" data-id="{{ item.id }}">
+		<td class="data-item-image">
+			{% if item.image %}
+				<img  style="height: 50px;" src="{{ asset('upload/public/'~item.image) }}" alt="" />
+				
+			{% else %}
+				<img  style="height: 50px;" src="{{ asset('img/vignette-landscape.png') }}">
+			{% endif %}
+		</td>
+
+		<td>
+			<a href="" class="edit">
+				{{ item.civility }}. {{ item.username|lower|title }}
+			</a>
+		</td>
+
+		<td>
+			<a href="" class="edit">
+				{{ item.birth|date("d M Y") }}
+			</a>
+		</td>
+
+		<td>{{ item.email }}</td>
+
+		<td>{{ item.corporation ? item.corporation.name|upper : '-' }}</td>
+
+		<td>
+    		{{ item.createAt|date('d M Y à H:i') }}
+		</td>
+
+		<td>
+			<span class="label bg-purple">
+            {{ item.state }}
+			</span>
+		</td>
+	</tr>
+{% endfor %}

@@ -1,0 +1,326 @@
+{% extends 'account/base.html.twig' %}
+
+{% form_theme form 'bootstrap_3_layout.html.twig' %}
+
+{% set activeTab = app.request.query.get('tab','privileges') %}
+
+{% block header_content %}
+    Mon profil <small>affichage des informations du profil courant</small>
+{% endblock %}
+
+{% block stylesheets %}
+    {{ parent() }}
+
+    <style>
+       
+    </style>
+{% endblock %}
+
+{% block body_content %}
+    <section class="content">
+
+        <div class="row">
+            <div class="col-md-3">
+                <!-- Profile Image -->
+                <div class="box box-primary">
+                    <div class="box-body box-profile" align="center">
+
+                        <div style="position:relative;display:inline-block" id="profile-user-img-container">
+                            <img class="profile-user-img img-responsive img-circle" src="http://www.ampleadmin.wrappixel.com/ampleadmin-html/plugins/images/users/varun.jpg" alt="User profile picture">
+                            
+
+                            <div style="position:absolute;right:0;bottom:5%">
+                                <a href="">
+                                    <i class="fa fa-camera"></i>
+                                </a>
+
+                               
+                            </div>
+                            
+                        </div>
+
+                        <h3 class="profile-username text-center">{{ app.user.username|lower|title }}</h3>
+
+                        <p class="text-muted text-center">
+                            {% if is_granted('ROLE_SUPER_ADMIN') %}
+                                Super administrateur
+                            {% elseif is_granted('ROLE_ADMIN') %}
+                                Administrateur
+                            {% elseif is_granted('ROLE_SUBSCRIBER') %}
+                                Souscripteur
+                            {% elseif is_granted('ROLE_OBSERVER') %}
+                                Observateur
+                            
+                            {% endif %} 
+                        </p>
+
+                        <p class="text-muted text-center">
+                            {{ app.user.type.name }}
+                        </p>
+
+                        
+                    </div>
+                </div>
+
+                <!-- About Me Box -->
+                <div class="box box-primary">
+                    <div class="box-header with-border">
+                      <h3 class="box-title">A propos</h3>
+                    </div>
+                    <!-- /.box-header -->
+                    <div class="box-body">
+                        <strong><i class="fa fa-file-text-o margin-r-5"></i> Moi</strong>
+
+                        <p class="text-muted">
+                            {% if app.user.aboutme %}
+                                {{ app.user.aboutme }}
+                            {% else %}
+                                - vide 
+                            {% endif %}
+                        </p>
+
+                        <hr>
+
+                        <strong><i class="fa fa-map-marker margin-r-5"></i> Pays</strong>
+
+                        <p class="text-muted">Malibu, California</p>
+                    </div>
+                </div>
+            </div>
+        
+            <div class="col-md-9">
+                <div class="nav-tabs-custom">
+                    <ul class="nav nav-tabs">
+                        <li class="{{ activeTab == 'privileges' ? 'active' : ''}}">
+                            <a href="#privileges" data-toggle="tab">
+                                Mes privilèges
+                            </a>
+                        </li>
+
+                        <li class="{{ activeTab == 'settings' ? 'active' : ''}}">
+                            <a href="#settings" data-toggle="tab">
+                                Parametre du compte
+                            </a>
+                        </li>
+                    </ul>
+                    
+                    <div class="tab-content">
+                        <div class="{{ activeTab == 'privileges' ? 'active' : ''}} tab-pane" id="privileges">
+
+                            <table class="table table-hover">
+                                <tbody>
+                                    <tr>
+                                        <th>Nom</th>
+                                        <th>Reférence</th>
+                                        <th>Description</th>
+                                        <th>Nature</th>
+                                        <th>Ajouté</th>
+                                    </tr>
+
+                                    {% for item in app.user.getUroles() %}
+                                        <tr class="data-item" data-id="{{ item.id }}">
+                                            <td >
+                                                {{ item.role.name|lower|title }}
+                                            </td>
+
+                                            <td>
+                                                <span class="label label-primary">
+                                                    {{ item.role.label }}
+                                                </span>
+                                            </td>
+
+                                            <td>
+                                                {{ item.role.description }}
+                                            </td>
+
+                                            <td >
+                                                <span class="label label-primary">
+                                                    {{ item.role.type }}
+                                                </span>
+                                            </td>
+
+                                            <td >
+                                                {{ item.createAt|date('d M Y à H:i') }}
+                                            </td>
+                                        </tr>
+                                    {% endfor %}
+                           
+                                </tbody>
+                            </table>
+                        </div>
+                       
+
+                        <div class="{{ activeTab == 'settings' ? 'active' : ''}} tab-pane" id="settings">
+
+                            {{ form_start(form,{'attr':{'class':'form-horizontal'}}) }}
+
+
+                                <div class="form-group">
+                                    <div class="col-sm-2">
+                                        <label class="control-label">
+                                            Code parrainage
+                                        </label>
+                                    </div>
+
+                                    <div class="col-sm-10">
+                                        <p class="form-control-static">{{ app.user.code }}</p>
+                                    </div>
+                                </div>
+
+                                <div class="form-group">
+                                    <div class="col-sm-2">
+                                        <label class="control-label">
+                                            Email
+                                        </label>
+                                    </div>
+
+                                    <div class="col-sm-10">
+                                        <p class="form-control-static">{{ app.user.email }}</p>
+                                    </div>
+                                </div>
+
+
+
+                                <div class="form-group">
+                                    <div class="col-sm-2">
+                                        {{ form_label(form.username) }}
+                                    </div>
+
+                                    <div class="col-sm-10">
+                                        {{ form_errors(form.username) }}
+                                        {{ form_widget(form.username) }}
+                                    </div>
+                                </div>
+
+                                <div class="form-group">
+
+                                    <div class="col-sm-2">
+                                        {{ form_label(form.aboutme) }}
+                                    </div>
+
+                                    <div class="col-sm-10">
+                                        {{ form_errors(form.aboutme) }}
+                                        {{ form_widget(form.aboutme) }}
+                                    </div>
+                                </div>
+
+                                <div  class="form-group has-collection">
+
+                                    <div class="col-sm-2">
+                                        {{ form_label(form.contacts) }}
+                                    </div>
+
+                                    <div class="col-sm-10">
+
+                                        <div class="row">
+                                            <div class="col-md-5">
+                                                <div class="contacts" data-prototype="{{ form_widget(form.contacts.vars.prototype)|e('html_attr') }}">
+
+                                                    {% for contact in form.contacts %}
+                                                        {{ form_errors(contact.phone) }}
+                                                        <div class="input-group">
+                                                            <span class="input-group-addon"><i class="fa fa-phone"></i></span>
+                                                            {{ form_widget(contact.phone) }}
+                                                            <span class="input-group-addon">
+                                                                <a href="">
+                                                                    <i class="fa fa-trash"></i> 
+                                                                </a>
+                                                            </span>
+                                                        </div>
+                                                    {% endfor %}
+                                                </div>
+                                                
+                                                <hr>
+                                                <a href="" class="collection-add">
+                                                    <i class="fa fa-plus"></i>&nbsp;&nbsp;Ajouter  
+                                                </a>
+                                            </div>
+                                        </div>
+                                        
+                                    </div>
+                                    
+                                </div>
+
+                                <div class="hide">
+                                    {{ form_row(form.image) }}
+                                </div>
+
+                                
+
+                                <div class="form-group">
+                                    <div class="col-sm-offset-2 col-sm-10">
+                                        <button type="submit" class="btn btn-danger">
+                                            Enregistrer
+                                        </button>
+                                    </div>
+                                </div>
+
+                               
+
+                            {{ form_end(form,{'image':false}) }}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+{% endblock %}
+
+{% block javascripts %}
+    {{ parent() }}
+
+    <script>
+        $(document).ready(function($){
+            $('body').on("click",".has-collection .collection-add",
+                e=>{
+                    e.preventDefault();
+                    var obj = $(e.target);
+                    var parent = obj.parent();
+                    var parent_collection = obj.parents(".has-collection:first");
+                    var parent_prototype  = parent.find('[data-prototype]');
+                    var tpl = parent_prototype.data('prototype');
+                    var index = parent_prototype.find(" > div.input-group").length;
+
+                    tpl = tpl.replace(/__name__/g,index);
+
+
+
+                    var addon_prev = $('<span class="input-group-addon"><i class="fa fa-phone"></i></span>');
+
+                    var addon_next = $('<span class="input-group-addon"><a href=""><i class="fa fa-trash"></i></button></a>');
+
+                    var li = $('<div class="input-group">').append(addon_prev).append($(tpl).find('input:first')).append(addon_next);
+
+                    
+                    addon_next.find('a').on({
+                        click:e=>{
+                            e.preventDefault();
+                            li.remove();
+                        }
+                    });
+                    
+                    li.find('label').remove();
+                    //li.insertBefore(parent.find('a'));
+                    parent_prototype.append(li);
+
+            });
+
+            $('body').on("click",".has-collection [data-prototype] a",
+                e=>{
+                e.preventDefault();
+
+                var obj = $(e.target);
+                obj.parents('.input-group:first').remove();
+            });
+
+
+            $("#profile-user-img-container a").on({
+                click:function(e){
+                    e.preventDefault();
+
+                    $("#settings").find('input[type=file]').trigger('click');
+                }
+            })
+        });
+    </script>
+{% endblock %}

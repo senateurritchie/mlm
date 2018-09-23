@@ -1,0 +1,153 @@
+{% form_theme form 'bootstrap_3_layout.html.twig' %}
+
+{% if use_modal == 'insert' %}
+    <div class="modal fade modal-form" id="modal-insert" role="dialog" aria-labelledby="création de compte" aria-describedby="">
+{% else %}
+    <div class="modal fade modal-form" id="modal-update" data-id="{{ data.id }}" role="dialog" aria-labelledby="modification du compte" aria-describedby="">
+{% endif %}
+
+	<div class="modal-dialog"  role="document">
+	    <div class="modal-content" >
+	        <div class="modal-header bg-purple">
+	            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+	                <span aria-hidden="true">×</span>
+	            </button>
+	            <h4 class="modal-title">
+	                
+	                {% if use_modal == 'insert' %}
+	                	Ajouter un compte
+					{% else %}
+						Modification de compte
+					{% endif %}
+	            </h4>
+	        </div>
+	        
+	        {{ form_start(form) }}
+	            <div class="modal-body" style="height:auto">
+
+	            	{% if use_modal != 'insert' %}
+	            		<div class="alert bg-purple">
+	            			 <h4>CODE:</h4>
+
+	            			 <div class="text" style="font-size:24px">
+	            			 	{{ data.code }}
+	            			 </div>
+	            		</div>
+					  
+					{% endif %}
+					
+					<div class="row">
+
+						<div class="col-md-4">
+							{{ form_row(form.civility) }}
+						</div>
+
+						<div class="col-md-4">
+							{{ form_row(form.username) }}
+						</div>
+
+						<div class="col-md-4">
+							{{ form_row(form.birth) }}
+							
+						</div>
+					</div>
+
+					<div class="row">
+						<div class="col-md-6">
+							{{ form_row(form.email) }}
+						</div>
+
+						<div class="col-md-6">
+							{{ form_row(form.type) }}
+						</div>
+					</div>
+
+					
+
+					<div class="row">
+
+						{% if use_modal == 'insert' %}
+							<div class="col-md-6">
+								{{ form_row(form.codeParrain) }}
+							</div>
+						{% endif %}
+
+						<div class="{{ use_modal == 'insert' ? 'col-md-6' : 'col-md-12' }}">
+							{{ form_row(form.roles) }}
+
+							{% if use_modal != 'insert' %}
+								<div class="hide">
+									{{ form_row(form.codeParrain) }}
+								</div>
+							{% endif %}
+						</div>
+					</div>
+
+					<div class="row">
+						<div class="col-md-12">
+            				{{ form_row(form.privileges) }}
+						</div>
+					</div>
+
+					<hr>
+
+					<div class="row">
+						<div class="col-md-12">
+							<h3>Parrain</h3>
+
+							{% if data.parrain %}
+								<table class="table">
+									<tr>
+										<td>
+											Nom & Prénoms
+										</td>
+
+										<td>
+											{{ data.parrain.username|title }}
+										</td>
+									</tr>
+
+									<tr>
+										<td>
+											Code
+										</td>
+
+										<td>
+											{{ data.parrain.code }}
+										</td>
+									</tr>
+								</table>
+							{% else %}
+
+								<div class="alert bg-purple">
+									<i class="fa fa-warning"></i>&nbsp;&nbsp;Aucun parrain pour ce souscripteur.
+								</div>    
+
+							{% endif %}
+						</div>
+					</div>
+	            </div>
+				
+
+	            <div class="modal-footer">
+
+	                <div class="pull-left">
+
+		                <button type="button" class="btn bg-purple" data-dismiss="modal">
+	                        Quitter
+	                    </button>
+
+	                </div>
+	                
+	                <button class="btn bg-purple pull-right">
+	                    <i class="fa fa-save"></i> Enregistrer
+	                </button>
+	            </div>
+	        {{ form_end(form) }}
+
+	        <div class="overlay">
+      			<i class="fa fa-spinner fa-spin fa-5x"></i>
+    		</div>
+	    </div>
+	</div>
+</div>

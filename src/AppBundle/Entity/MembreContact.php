@@ -3,6 +3,7 @@
 namespace AppBundle\Entity;
 
 use Doctrine\ORM\Mapping as ORM;
+use Gedmo\Mapping\Annotation as Gedmo;
 
 /**
  * MembreContact
@@ -24,14 +25,14 @@ class MembreContact
     /**
     * @var AppBundle\Entity\Membre
     *
-    * @ORM\ManyToOne(targetEntity="AppBundle\Entity\Membre")
+    * @ORM\ManyToOne(targetEntity="AppBundle\Entity\Membre", inversedBy="contacts")
     * @ORM\JoinColumn(nullable=true, onDelete="CASCADE")
     */
     private $membre;
     /**
      * @var string
      *
-     * @ORM\Column(name="phone", type="string", length=10, unique=true)
+     * @ORM\Column(name="phone", type="string", length=20, unique=true)
      */
     private $phone;
     /**
@@ -42,10 +43,11 @@ class MembreContact
     private $isDefault;
 
     /**
-     * @var \DateTime
-     *
-     * @ORM\Column(name="create_at", type="datetime")
-     */
+    * @var \DateTime
+    *
+    * @Gedmo\Timestampable(on="create")
+    * @ORM\Column(name="create_at", type="datetime")
+    */
     private $createAt;
 
 

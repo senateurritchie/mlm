@@ -3,6 +3,7 @@
 namespace AppBundle\Entity;
 
 use Doctrine\ORM\Mapping as ORM;
+use Gedmo\Mapping\Annotation as Gedmo;
 
 /**
  * MembreType
@@ -24,9 +25,16 @@ class MembreType
     /**
      * @var string
      *
-     * @ORM\Column(name="name", type="string", length=100, unique=true, options={"comment":"le nom du titre"})
+     * @ORM\Column(name="name", type="string", length=30, unique=true, options={"comment":"le nom du titre"})
      */
     private $name;
+    /**
+    * @var string
+    *
+    * @Gedmo\Slug(fields={"name"})
+    * @ORM\Column(name="slug", type="string", length=30, unique=true)
+    */
+    private $slug;
 
     /**
      * @var string
@@ -156,4 +164,3 @@ class MembreType
         return $this->coins;
     }
 }
-

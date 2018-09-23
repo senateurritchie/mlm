@@ -30,12 +30,44 @@ class Membre implements UserInterface, EquatableInterface, \Serializable
     private $id;
 
     /**
+    * @var AppBundle\Entity\Membre
+    * @ORM\ManyToOne(targetEntity="AppBundle\Entity\Membre")
+    * @ORM\JoinColumn(nullable=true, onDelete="SET NULL")
+    */
+    private $parrain;
+
+    /**
     * @var AppBundle\Entity\MembreType
     *
     * @ORM\ManyToOne(targetEntity="AppBundle\Entity\MembreType")
     * @ORM\JoinColumn(nullable=true, onDelete="SET NULL")
     */
     private $type;
+
+    /**
+    * @var AppBundle\Entity\Corporation
+    * 
+    * @ORM\ManyToOne(targetEntity="AppBundle\Entity\Corporation")
+    * @ORM\JoinColumn(nullable=true, onDelete="SET NULL")
+    */
+    private $corporation;
+
+
+    /**
+    * @var string
+    *
+    * @Groups({"group1"})
+    * @ORM\Column(name="civility", type="string", options={"comment":"la civilité du souscripteur"}, columnDefinition="ENUM('M','Mlle','Mme')", nullable=true)
+    */
+    private $civility = "M";
+
+    /**
+    * @var date
+    *
+    * @Groups({"group1"})
+    * @ORM\Column(name="birth", type="date", options={"comment":"la date de naissance du souscripteur"}, nullable=true)
+    */
+    private $birth;
 
     /**
     * @var string
@@ -99,7 +131,7 @@ class Membre implements UserInterface, EquatableInterface, \Serializable
     * @var string
     *
     * @Groups({"group3"})
-    * @ORM\Column(name="code", type="string", options={"comment":"le code de parrainage de l'utilisateur"}, nullable=true, length=64)
+    * @ORM\Column(name="code", type="string", options={"comment":"le code de parrainage de l'utilisateur"}, nullable=true, length=30)
     */
     private $code;
     /**
@@ -145,18 +177,14 @@ class Membre implements UserInterface, EquatableInterface, \Serializable
     */
     private $uroles;
 
-
     /**
-    * Constructor
+    * @Groups({"group2"})
+    * @ORM\OneToMany(targetEntity="AppBundle\Entity\MembreContact", mappedBy="membre", cascade={"persist","remove"})
     */
-    public function __construct($username=null, $email=null,$password=null, $salt=null,$createAt=null){
-        $this->username = $username;
-        $this->email = $email;
-        $this->password = $password;
-        $this->salt = $salt;
+    private $contacts;
 
-        $this->uroles = new \Doctrine\Common\Collections\ArrayCollection();
-    }
+
+    
 
 
 
@@ -617,5 +645,150 @@ class Membre implements UserInterface, EquatableInterface, \Serializable
     public function getType()
     {
         return $this->type;
+    }
+
+    /**
+     * Set civility
+     *
+     * @param string $civility
+     *
+     * @return Membre
+     */
+    public function setCivility($civility)
+    {
+        $this->civility = $civility;
+
+        return $this;
+    }
+
+    /**
+     * Get civility
+     *
+     * @return string
+     */
+    public function getCivility()
+    {
+        return $this->civility;
+    }
+
+    /**
+     * Add contact
+     *
+     * @param \AppBundle\Entity\MembreContact $contact
+     *
+     * @return Membre
+     */
+    public function addContact(\AppBundle\Entity\MembreContact $contact)
+    {
+        $contact->setMembre($this);
+        $this->contacts[] = $contact;
+        return $this;
+    }
+
+    /**
+     * Remove contact
+     *
+     * @param \AppBundle\Entity\MembreContact $contact
+     */
+    public function removeContact(\AppBundle\Entity\MembreContact $contact)
+    {
+        $contact->setMembre(null);
+        $this->contacts->removeElement($contact);
+    }
+
+    /**
+     * Get contacts
+     *
+     * @return \Doctrine\Common\Collections\Collection
+     */
+    public function getContacts()
+    {
+        return $this->contacts;
+    }
+
+    /**
+    * Set parrain
+    *
+    * @param \AppBundle\Entity\Membre $parrain
+    *
+    * @return Matrice
+    */
+    public function setParrain(\AppBundle\Entity\Membre $parrain = null)
+    {
+        $this->parrain = $parrain;
+
+        return $this;
+    }
+
+    /**
+    * Get parrain
+    *
+    * @return \AppBundle\Entity\Membre
+    */
+    public function getParrain()
+    {
+        return $this->parrain;
+    }
+
+    /**
+    * Constructor
+    */
+    public function __construct($username=null, $email=null,$password=null, $salt=null,$createAt=null){
+        $this->username = $username;
+        $this->email = $email;
+        $this->password = $password;
+        $this->salt = $salt;
+
+        $this->uroles = new \Doctrine\Common\Collections\ArrayCollection();
+        $this->contacts = new \Doctrine\Common\Collections\ArrayCollection();
+    }
+
+
+    /**
+     * Set birth
+     *
+     * @param \DateTime $birth
+     *
+     * @return Membre
+     */
+    public function setBirth($birth)
+    {
+        $this->birth = $birth;
+
+        return $this;
+    }
+
+    /**
+     * Get birth
+     *
+     * @return \DateTime
+     */
+    public function getBirth()
+    {
+        return $this->birth;
+    }
+
+    /**
+     * Set corporation
+     *
+     * @param \AppBundle\Entity\Corporation $corporation
+     *
+     * @return Membre
+     */
+    public function setCorporation(\AppBundle\Entity\Corporation $corporation = null)
+    {
+        $this->corporation = $corporation;
+
+        return $this;
+    }
+
+    /**
+     * Get corporation
+     *
+     * @return \AppBundle\Entity\Corporation
+     */
+    public function getCorporation()
+    {
+        return $this->corporation;
     }
 }
