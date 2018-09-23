@@ -2,6 +2,9 @@
 
 namespace AppBundle\Repository;
 
+use AppBundle\Entity\Matrice;
+use AppBundle\Entity\Membre;
+
 /**
  * MatriceRepository
  *
@@ -10,4 +13,405 @@ namespace AppBundle\Repository;
  */
 class MatriceRepository extends \Doctrine\ORM\EntityRepository
 {
+
+	public function addWhereClause(&$qb,&$params){
+
+        $params = array_filter($params,function($el){
+            if(is_array($el)){
+                return $el;
+            }
+            return strip_tags(trim($el));
+        });
+
+		// recherche par terms
+		if(@$params["q"]){
+			$this->whereTerms($qb,@$params["q"]);
+		}
+
+		// recherche par id
+		if(@$params["id"]){
+			$this->whereId($qb,@$params["id"]);
+		}
+
+		// recherche des feuilles
+		if(@$params["is_leaft"]){
+			$this->whereIsLeaft($qb);
+		}
+		// recherche des noeuds
+		if(@$params["is_node"]){
+			$this->whereIsNode($qb);
+		}
+		// recherche la racine
+		if(@$params["is_root"]){
+			$this->whereIsRoot($qb);
+		}
+		// recherche les parents hiérachique d'une reference
+		if(@$params["is_reference_parent"]){
+			$this->whereIsReferenceParent($qb,@$params["ref_left"],@$params["ref_right"]);
+		}
+		// recherche tous les éléments indépendants d'un élément de référence
+		if(@$params["is_not_under_reference"]){
+			$this->whereIsNotUnderAReference($qb,@$params["ref_left"],@$params["ref_right"]);
+		}
+		// recherche tous les éléments sous une référence
+		if(@$params["is_under_reference"]){
+			$this->whereIsUnderAReference($qb,@$params["ref_left"],@$params["ref_right"]);
+		}
+
+		// recherche par indice
+		// recherche tous les éléments sous une référence y compris la reference
+        if(@$params["left_ind"] && @$params["right_ind"]){
+            $this->whereRangeIndice($qb,$params["left_ind"],$params["right_ind"]);
+        }
+        else if(@$params["left_ind"]){
+            $this->whereLeftIndice($qb,$params["left_ind"]);
+        }
+        else if(@$params["right_ind"]){
+            $this->whereRightIndice($qb,$params["whereRightInd"]);
+        }
+
+        // recherche par profondeur
+        if(@$params["depth"] && @$params["depth_end"]){
+            $this->whereRangeDepth($qb,$params["depth"],$params["depth_end"]);
+        }
+        else if(@$params["depth"]){
+            $this->whereDepth($qb,$params["depth"]);
+        }
+
+        return $this;
+    }
+
+
+	/**
+	 * permet de retourner tous les elements de l'arbre
+	 * 
+	 * @param array $params les pararatres de la recherche
+	 * @param integer $limit le nombre de resultat à retourner
+	 * @param integer $offset la position de bebut de cette recherche
+	 */
+	public function search($params = array(),$limit = 50,$offset=0){
+		$qb = $this->createQueryBuilder("m");
+		$this->addWhereClause($qb,$params);
+
+		if(!@$params['order_id']){
+    		$params["order_id"] = "asc";
+    	}
+
+		// ordre d'affichage par id
+        if(@$params['order_id']){
+            $order = strtoupper(trim($params['order_id'])) == "ASC" ? "ASC" : "DESC";
+            $qb->orderBy("m.id",$order);
+        }
+
+	    // limit et offset
+	    $qb->setFirstResult( $offset )
+   		->setMaxResults( $limit );
+
+   		$query = $qb->getQuery();
+
+	    return $query->getResult();
+	}
+
+
+	/**
+	* Permet l'insertion d'une feuille dans l'arbre sous une reference
+	* 
+	* @param \AppBundle\Entity\Membre 	$adherent le membre à positionner
+	* @param  AppBundle\Entity\Matrice  $reference la reference
+	* @return void
+	*/
+	public function InsertLeaft(Membre &$adherent, Matrice &$reference){
+
+		/*UPDATE NEW_FAMILLE
+		SET NFM_BD = NFM_BD + 2
+		WHERE NFM_BD >= 35*/
+
+		$qb = $this->createQueryBuilder("m");
+		$q = $qb->update()
+		->set("m.rightInd","m.rightInd + 2")
+		->where($qb->exp()->gte("m.rightInd",":ref_right"))
+		->setParameter("ref_right",$reference->getRightInd())
+		->getQuery();
+		$p = $q->execute();
+
+		/*UPDATE NEW_FAMILLE
+		SET NFM_BG = NFM_BG + 2
+		WHERE NFM_BG >= 35*/
+
+		$qb = $this->createQueryBuilder("m");
+		$q = $qb->update()
+		->set("m.leftInd","m.leftInd + 2")
+		->where($qb->exp()->gte("m.leftInd",":ref_right"))
+		->setParameter("ref_right",$reference->getRightInd())
+		->getQuery();
+		$p = $q->execute();
+
+
+		/*INSERT INTO NEW_FAMILLE (NFM_BG, NFM_BD, NFM_LIB)
+   		VALUES (35, 36, 'Roller')*/
+
+   		$item = new Matrice();
+		$item->setMembre($adherent);
+		$item->setLeftInd($reference->getRightInd());
+		$item->setRightInd($reference->getRightInd() + 1);
+		$item->setDepth($reference->getDepth() +1 );
+		$this->_em->persist($item);
+	}
+
+	/**
+	* Permet la supression d'une reference dans l'arbre
+	* 
+	* @param  AppBundle\Entity\Matrice  $reference la reference à supprimer
+	* @return void
+	*/
+	public function removeNode(Matrice &$reference){
+
+		$steper = intval($reference->getRightInd()) - intval($reference->getLeftInd()) + 1;
+
+		// DELETE FROM NEW_FAMILLE
+		// WHERE  NFM_BG >= 22 AND NFM_BD <= 35
+
+		$qb = $this->createQueryBuilder("m");
+		$q = $qb->delete()
+		->where($qb->exp()->andX(
+			$qb->exp()->gte("m.leftInd",":ref_left"),
+			$qb->exp()->lte("m.rightInd",":ref_right"),
+		))
+		->setParameter("ref_left",$reference->getLeftInd())
+		->setParameter("ref_right",$reference->getRightInd())
+		->getQuery();
+		$p = $q->execute();
+
+
+		// UPDATE NEW_FAMILLE
+		// SET NFM_BG = NFM_BG - 14
+		// WHERE NFM_BG > 22
+
+		$qb = $this->createQueryBuilder("m");
+		$q = $qb->update()
+		->set("m.leftInd","m.leftInd - :steper")
+		->where($qb->exp()->gt("m.leftInd",":ref_left"))
+		->setParameter("ref_left",$reference->getLeftInd())
+		->getQuery();
+		$p = $q->execute();
+
+
+		// UPDATE NEW_FAMILLE
+		// SET NFM_BD = NFM_BD - 14
+		// WHERE NFM_BD >= 22
+
+		$qb = $this->createQueryBuilder("m");
+		$q = $qb->update()
+		->set("m.rightInd","m.rightInd - :steper")
+		->where($qb->exp()->gte("m.rightInd",":ref_left"))
+		->setParameter("ref_left",$reference->getLeftInd())
+		->getQuery();
+		$p = $q->execute();
+	}
+
+	/**
+	* Permet l'insertion d'un noeud  sous une reference
+	* 
+	* @param  AppBundle\Entity\Matrice  $node le noeud à ajouter
+	* @param  AppBundle\Entity\Matrice  $reference la reference sous laquelle ajouter
+	* @return void
+	*/
+	public function insertNode(Matrice &$node,Matrice &$reference){
+
+		$steper = intval($node->getRightInd()) - intval($node->getLeftInd()) + 1;
+
+		/*UPDATE NEW_FAMILLE
+		SET NFM_BD = NFM_BD + stepper
+		WHERE NFM_BD >= 35*/
+
+		$qb = $this->createQueryBuilder("m");
+		$q = $qb->update()
+		->set("m.rightInd","m.rightInd + :steper")
+		->where($qb->exp()->gte("m.rightInd",":ref_right"))
+		->setParameter("ref_right",$reference->getRightInd())
+		->setParameter("steper",$steper)
+		->getQuery();
+		$p = $q->execute();
+
+		/*UPDATE NEW_FAMILLE
+		SET NFM_BG = NFM_BG + stepper
+		WHERE NFM_BG >= 35*/
+
+		$qb = $this->createQueryBuilder("m");
+		$q = $qb->update()
+		->set("m.leftInd","m.leftInd + :steper")
+		->where($qb->exp()->gte("m.leftInd",":ref_right"))
+		->setParameter("ref_right",$reference->getRightInd())
+		->setParameter("steper",$steper)
+		->getQuery();
+		$p = $q->execute();
+
+		/*INSERT INTO NEW_FAMILLE (NFM_BG, NFM_BD, NFM_LIB)
+   		VALUES (35, 36, 'Roller')*/
+
+
+		$node->setLeftInd($reference->getRightInd());
+		$node->setRightInd($reference->getRightInd() + $steper - 1);
+		$node->setDepth($reference->getDepth() +1 );
+
+		// mise a jour de la profondeur en dessous du noeud
+		$qb = $this->createQueryBuilder("m");
+		$q = $qb->update()
+		->set("m.depth",":new_depth")
+		->where($qb->exp()->andX(
+			$qb->exp()->gt("m.leftInd",":ref_left"),
+			$qb->exp()->lt("m.rightInd",":ref_right"),
+		))
+		->setParameter("ref_left",$node->getLeftInd())
+		->setParameter("ref_right",$node->getRightInd())
+		->setParameter("new_depth",$node->getDepth()+1)
+		->getQuery();
+		$p = $q->execute();
+
+	}
+
+	
+
+	public function whereTerms(QueryBuilder $qb,$value){
+		$qb->andWhere($qb->expr()->orX(
+			$qb->expr()->like("m.username", ":q"),
+			$qb->expr()->like("m.email", ":q")
+		))
+	    ->setParameter("q","%$value%");
+	}
+
+	public function whereId(QueryBuilder $qb,$value){
+		$qb->andWhere($qb->expr()->eq("m.id", ":id"))
+	    ->setParameter("id",$value);
+	}
+
+	public function whereLeftInd(QueryBuilder $qb,$value){
+		$qb->andWhere($qb->expr()->eq("m.leftInd", ":left_ind"))
+	    ->setParameter("left_ind",$value);
+	}
+
+	public function whereRightInd(QueryBuilder $qb,$value){
+		$qb->andWhere($qb->expr()->eq("m.rightInd", ":right_ind"))
+	    ->setParameter("right_ind",$value);
+	}
+
+	/**
+	* recherche tous les éléments sous une référence y compris la reference
+	* 
+	* @param  QueryBuilder $qb  
+	* @param  integer       $leftInd l'indice gauche de la reference
+	* @param  integer       $rightInd   l'indice droit de la reference
+	* @return void
+	*/
+	public function whereRangeIndice(QueryBuilder $qb,$leftInd,$rightInd){
+		$qb->andWhere(
+			$qb->expr()->between("m.leftInd",":ref_left",":ref_right")
+		)
+        ->setParameter("ref_left",$leftInd)
+        ->setParameter("ref_right",$rightInd);
+  	}
+
+  	public function whereDepth(QueryBuilder $qb,$value){
+		$qb->andWhere($qb->expr()->eq("m.depth", ":depth"))
+	    ->setParameter("depth",$value);
+	}
+
+	public function whereRangeDepth(QueryBuilder $qb,$start,$end){
+		$qb->andWhere(
+			$qb->expr()->between("m.depth",":depth_start",":depth_end")
+		)
+        ->setParameter("depth_start",$start)
+        ->setParameter("depth_end",$end);
+  	}
+
+  	/**
+  	* Recherche les feuilles de l'arbre
+  	* @param  QueryBuilder $qb
+  	* @return void
+  	*/
+  	public function whereIsLeaft(QueryBuilder $qb){
+		$qb->andWhere(
+			$qb->expr()->eq("m.leftInd","m.rightInd - 1")
+		)
+  	}
+
+  	/**
+  	* Recherche les noeuds de l'arbre
+  	* @param  QueryBuilder $qb
+  	* @return void
+  	*/
+  	public function whereIsNode(QueryBuilder $qb){
+		$qb->andWhere(
+			$qb->expr()->not($qb->expr()->eq("m.leftInd","m.rightInd - 1"))
+		)
+  	}
+
+  	/**
+  	* Recherche la racine de l'arbre
+  	* @param  QueryBuilder $qb
+  	* @return void
+  	*/
+  	public function whereIsRoot(QueryBuilder $qb){
+		$qb->andWhere(
+			$qb->expr()->eq("m.leftInd",1)
+		)
+  	}
+
+  	/**
+	* permet de retrouver tous les parents hierachique d'une reference
+	* 
+	* @param integer $leftInd l'index gauche de la reference
+	* @param integer $rightInd l'index droit de la reference
+	*/
+	public function whereIsReferenceParent(QueryBuilder $qb,$leftInd,$rightInd){
+		$qb
+		->andWhere($qb->expr()->andX(
+			$qb->expr()->lt("m.leftInd", ":ref_left"),
+			$qb->expr()->gt("m.rightInd", ":ref_right"),
+		))
+		->setParameter("ref_left",$leftInd)
+		->setParameter("ref_right",$rightInd);
+	}
+
+	/**
+	* permet de retourner tous les elements de l'arbre
+	* sauf ceux en dessous d'une reference donnnée
+	* 
+	* @param integer $leftInd l'index gauche de la reference
+	* @param integer $rightInd l'index droit de la reference
+	*/
+	public function whereIsNotUnderAReference(QueryBuilder $qb,$leftInd,$rightInd){
+		$qb
+		->andWhere($qb->expr()->orX(
+			$qb->expr()->lt("m.leftInd", ":ref_left"),
+			$qb->expr()->gt("m.rightInd", ":ref_right"),
+		))
+		->setParameter("ref_left",$leftInd)
+		->setParameter("ref_right",$rightInd);
+	}
+
+	/**
+	* permet de retourner tous les elements de l'arbre sous une reference
+	* 
+	* @param integer $leftInd l'index gauche de la reference
+	* @param integer $rightInd l'index droit de la reference
+	*/
+	public function whereIsUnderAReference(QueryBuilder $qb,$leftInd,$rightInd){
+		$qb
+		->andWhere($qb->expr()->andX(
+			$qb->expr()->gt("m.leftInd", ":ref_left"),
+			$qb->expr()->lt("m.rightInd", ":ref_right"),
+		))
+		->setParameter("ref_left",$leftInd)
+		->setParameter("ref_right",$rightInd);
+	}
+
+	
+
+	public function count(array $params = array() ){
+        $qb = $this->createQueryBuilder('m');
+        $this->addWhereClause($qb, $params);
+        return $qb->getQuery()
+        ->getSingleScalarResult();
+    }
 }

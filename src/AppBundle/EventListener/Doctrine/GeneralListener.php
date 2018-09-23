@@ -25,7 +25,17 @@ class GeneralListener{
             $plainPassword = 'bbmlm';
             $encoded = $this->encoder->encodePassword($entity, $plainPassword);
             $entity->setPassword($encoded);
-            $entity->setCode(\AppBundle\Entity\Membre::generateToken(64));
+            $entity->setCode(\AppBundle\Entity\Membre::generateToken(30));
+
+            if(($el = $entity->getParrain())){
+                $nbr = intval($el->getChildNbr())+1;
+                $el->setChildNbr($nbr);
+            }
+
+            if(($el = $entity->getCorporation())){
+                $nbr = intval($el->getMembreNbr())+1;
+                $el->setMembreNbr($nbr);
+            }
         }
     }
 

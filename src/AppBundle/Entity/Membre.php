@@ -131,7 +131,7 @@ class Membre implements UserInterface, EquatableInterface, \Serializable
     * @var string
     *
     * @Groups({"group3"})
-    * @ORM\Column(name="code", type="string", options={"comment":"le code de parrainage de l'utilisateur"}, nullable=true, length=30)
+    * @ORM\Column(name="code", type="string", options={"comment":"le code de parrainage de l'utilisateur"}, nullable=false, unique=true, length=30)
     */
     private $code;
     /**
@@ -182,6 +182,13 @@ class Membre implements UserInterface, EquatableInterface, \Serializable
     * @ORM\OneToMany(targetEntity="AppBundle\Entity\MembreContact", mappedBy="membre", cascade={"persist","remove"})
     */
     private $contacts;
+
+    /**
+    * @var int
+    *
+    * @ORM\Column(name="child_nbr", type="integer", options={"comment":"permet d'enregistrer le nombre de filleuls d'un adherent"})
+    */
+    private $childNbr = 0;
 
 
     
@@ -790,5 +797,29 @@ class Membre implements UserInterface, EquatableInterface, \Serializable
     public function getCorporation()
     {
         return $this->corporation;
+    }
+
+    /**
+     * Set childNbr
+     *
+     * @param integer $childNbr
+     *
+     * @return Membre
+     */
+    public function setChildNbr($childNbr)
+    {
+        $this->childNbr = $childNbr;
+
+        return $this;
+    }
+
+    /**
+     * Get childNbr
+     *
+     * @return integer
+     */
+    public function getChildNbr()
+    {
+        return $this->childNbr;
     }
 }

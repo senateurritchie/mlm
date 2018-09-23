@@ -151,7 +151,7 @@
     		<hr>
 
     		{% for notice in app.flashes('notice-success') %}
-                <div class="alert alert-info alert-dismissible">
+                <div class="alert bg-purple alert-dismissible">
 	                <button type="button" class="close" data-dismiss="alert" aria-hidden="true">×</button>
 	                <h4><i class="icon fa fa-check"></i> Félicitation!</h4>
 	                {{notice}}
@@ -159,14 +159,14 @@
             {% endfor %}
 
             {% for notice in app.flashes('notice-error') %}
-                <div class="alert alert-danger alert-dismissible">
+                <div class="alert alert-warning alert-dismissible">
 	                <button type="button" class="close" data-dismiss="alert" aria-hidden="true">×</button>
 	                <h4><i class="icon fa fa-check"></i> Attention!</h4>
 	                {{ notice }}
 	            </div>
             {% endfor %}
 
-        	<div class="box box-primary">
+        	<div class="box box-primary my-border-purple">
             	<div class="box-header">
               		<h3 class="box-title">Tout les comptes</h3>
 
@@ -197,6 +197,7 @@
 		                 		<th>Corporation</th>
 		                  		<th>Ajouté le</th>
 		                  		<th>Etat</th>
+		                  		<th style="text-align:center">Filleuls</th>
 		                	</tr>
 	              		</thead>
 
