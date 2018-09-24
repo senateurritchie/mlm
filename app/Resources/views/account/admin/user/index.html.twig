@@ -168,7 +168,13 @@
 
         	<div class="box box-primary my-border-purple">
             	<div class="box-header">
-              		<h3 class="box-title">Tout les comptes</h3>
+              		<h3 class="box-title">
+              			{% if app.request.attributes.get('user_id') %}
+              				Code: {{ currentUser.data.membre.code }}
+              			{% else %}
+              				Tous les comptes
+              			{% endif %}
+              		</h3>
 
               		<div class="box-tools">
               			<form action="" method="get">
@@ -186,7 +192,7 @@
             	</div>
             
             	<!-- /.box-header -->
-            	<div class="box-body table-responsive no-padding" id="data-container">
+            	<div class="box-body" id="data-container">
               		<table class="table table-hover">
 		                <thead>
 		                	<tr>
@@ -198,6 +204,7 @@
 		                  		<th>Ajouté le</th>
 		                  		<th>Etat</th>
 		                  		<th style="text-align:center">Filleuls</th>
+		                  		<th style="text-align:center"></th>
 		                	</tr>
 	              		</thead>
 
@@ -205,13 +212,183 @@
 	              			{{ include('account/admin/user/item-render.html.twig') }}
 	              		</tbody>
               		</table>
-            	</div>
+
+
+					{% if app.request.attributes.get('user_id') %}
+	              		<div>
+	              			<hr>
+
+		              		<div class="row">
+						        <div class="col-lg-3 col-xs-6">
+						         	<!-- small box -->
+						          	<div class="small-box bg-purple">
+						            	<div class="inner">
+						              		<h3>{{ currentUser.stats.hierachical_parents}}</h3>
+						              		<p>Parrains ascendants</p>
+						            	</div>
+						            
+						            	<div class="icon">
+						              		<i class="fa fa-share-alt"></i>
+						            	</div>
+						            	<a href="{{ path('admin_node_index',{'node_id':currentUser.data.id,'search_mode':1})}}" class="small-box-footer">
+						                   Voir plus <i class="fa fa-arrow-circle-right"></i>
+						                </a>
+						          	</div>
+						        </div>
+
+						        <!-- ./col -->
+						        <div class="col-lg-3 col-xs-6">
+						        	<!-- small box -->
+						          	<div class="small-box bg-purple">
+						            	<div class="inner">
+						              		<h3>{{ currentUser.stats.direct_children }}</h3>
+
+						              		<p>Filleuls directs</p>
+						            	</div>
+						            	
+						            	<div class="icon">
+						              		<i class="fa fa-users"></i>
+						            	</div>
+						            	<a href="{{ path('admin_node_index',{'node_id':currentUser.data.id,'search_mode':2})}}" class="small-box-footer">
+						                    Voir plus <i class="fa fa-arrow-circle-right"></i>
+						                </a>
+						          	</div>
+						        </div>
+
+						        <div class="col-lg-3 col-xs-6">
+						        	<!-- small box -->
+						          	<div class="small-box bg-purple">
+						            	<div class="inner">
+						              		<h3>{{ currentUser.stats.direct_children_leaft }}</h3>
+
+						              		<p>Filleuls direct sans reseau</p>
+						            	</div>
+						            	<div class="icon">
+						              		<i class="fa fa-users"></i>
+						            	</div>
+						            	<a href="{{ path('admin_node_index',{'node_id':currentUser.data.id,'search_mode':3})}}" class="small-box-footer">
+						            		Voir plus <i class="fa fa-arrow-circle-right"></i>
+						            	</a>
+						          	</div>
+						        </div>
+								
+						        <div class="col-lg-3 col-xs-6">
+						        	<!-- small box -->
+						          	<div class="small-box bg-purple">
+						            	<div class="inner">
+						              		<h3>{{ currentUser.stats.direct_children_with_nodes }}</h3>
+
+						              		<p>Filleuls direct avec reseau</p>
+						            	</div>
+						            	<div class="icon">
+						              		<i class="fa fa-users"></i>
+						            	</div>
+						            	<a href="{{ path('admin_node_index',{'node_id':currentUser.data.id,'search_mode':4})}}" class="small-box-footer">
+						            		Voir plus <i class="fa fa-arrow-circle-right"></i>
+						            	</a>
+						          	</div>
+						        </div>
+						    </div>
+
+						    <div class="row">
+						        
+						        <div class="col-lg-3 col-xs-6">
+						            <!-- small box -->
+						            <div class="small-box bg-purple">
+						                <div class="inner">
+						                    <h3>{{ currentUser.stats.indirect_children }}</h3>
+
+						                    <p>Filleuls indirects</p>
+						                </div>
+						                <div class="icon">
+						                    <i class="fa fa-share-alt"></i>
+						                </div>
+						            	<a href="{{ path('admin_node_index',{'node_id':currentUser.data.id,'search_mode':5})}}" class="small-box-footer">
+						                	Voir plus <i class="fa fa-arrow-circle-right"></i>
+						                </a>
+						            </div>
+						        </div>
+
+						        <div class="col-lg-3 col-xs-6">
+						        	<!-- small box -->
+						          	<div class="small-box bg-purple">
+						            	<div class="inner">
+						              		<h3>{{ currentUser.stats.indirect_children_leaft }}</h3>
+
+						              		<p>Filleuls indirects sans reseau</p>
+						            	</div>
+						            	<div class="icon">
+						              		<i class="fa fa-users"></i>
+						            	</div>
+						            	<a href="{{ path('admin_node_index',{'node_id':currentUser.data.id,'search_mode':6})}}" class="small-box-footer">
+						            		Voir plus <i class="fa fa-arrow-circle-right"></i>
+						            	</a>
+						          	</div>
+						        </div>
+
+						        <div class="col-lg-3 col-xs-6">
+						        	<!-- small box -->
+						          	<div class="small-box bg-purple">
+						            	<div class="inner">
+						              		<h3>{{ currentUser.stats.indirect_children_with_nodes }}</h3>
+
+						              		<p>Filleuls indirects avec reseau</p>
+						            	</div>
+						            	<div class="icon">
+						              		<i class="fa fa-users"></i>
+						            	</div>
+						            	<a href="{{ path('admin_node_index',{'node_id':currentUser.data.id,'search_mode':7})}}" class="small-box-footer">
+						            		Voir plus <i class="fa fa-arrow-circle-right"></i>
+						            	</a>
+						          	</div>
+						        </div>
+						        
+						        <div class="col-lg-3 col-xs-6">
+						        	<!-- small box -->
+						          	<div class="small-box bg-purple">
+						            	<div class="inner">
+						              		<h3>{{ currentUser.stats.generations }}</h3>
+
+						              		<p>Générations</p>
+						            	</div>
+						            	<div class="icon">
+						              		<i class="fa fa-users"></i>
+						            	</div>
+						            	<a href="#" class="small-box-footer">
+						            		&nbsp;
+						            	</a>
+						          	</div>
+						        </div>
+
+						        
+						    </div>
+
+						    <div class="row">
+						    	<div class="col-lg-3 col-xs-6">
+						            <!-- small box -->
+						            <div class="small-box bg-purple">
+						                <div class="inner">
+						                    <h3>{{ currentUser.stats.children }}</h3>
+
+						                    <p>Tous le reseau</p>
+						                </div>
+						                <div class="icon">
+						                    <i class="fa fa-share-alt"></i>
+						                </div>
+						            	<a href="{{ path('admin_node_index',{'node_id':currentUser.data.id,'search_mode':8})}}" class="small-box-footer">
+						                	Voir plus <i class="fa fa-arrow-circle-right"></i>
+						                </a>
+						            </div>
+						        </div>
+						    </div>
+						</div>
+					{% endif %}
+            	</div>  
             </div>
+
+            
         </div>
     </div>
-
-    <script type="text/template">
-    </script>
 
 {% endblock %}
 

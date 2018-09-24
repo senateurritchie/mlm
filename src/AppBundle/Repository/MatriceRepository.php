@@ -1,6 +1,7 @@
 <?php
 
 namespace AppBundle\Repository;
+use Doctrine\ORM\QueryBuilder;
 
 use AppBundle\Entity\Matrice;
 use AppBundle\Entity\Membre;
@@ -33,6 +34,11 @@ class MatriceRepository extends \Doctrine\ORM\EntityRepository
 			$this->whereId($qb,@$params["id"]);
 		}
 
+		// recherche par membre_id
+		if(@$params["membre_id"]){
+			$this->whereMembreId($qb,@$params["membre_id"]);
+		}
+
 		// recherche des feuilles
 		if(@$params["is_leaft"]){
 			$this->whereIsLeaft($qb);
@@ -55,8 +61,9 @@ class MatriceRepository extends \Doctrine\ORM\EntityRepository
 		}
 		// recherche tous les éléments sous une référence
 		if(@$params["is_under_reference"]){
-			$this->whereIsUnderAReference($qb,@$params["ref_left"],@$params["ref_right"]);
+			$this->whereIsUnderAReference($qb,@$params["ref_left"],@$params["ref_right"],$params);
 		}
+
 
 		// recherche par indice
 		// recherche tous les éléments sous une référence y compris la reference
@@ -90,7 +97,9 @@ class MatriceRepository extends \Doctrine\ORM\EntityRepository
 	 * @param integer $offset la position de bebut de cette recherche
 	 */
 	public function search($params = array(),$limit = 50,$offset=0){
-		$qb = $this->createQueryBuilder("m");
+		$qb = $this->createQueryBuilder("m")
+		->leftJoin("m.membre","membre");
+
 		$this->addWhereClause($qb,$params);
 
 		if(!@$params['order_id']){
@@ -100,7 +109,7 @@ class MatriceRepository extends \Doctrine\ORM\EntityRepository
 		// ordre d'affichage par id
         if(@$params['order_id']){
             $order = strtoupper(trim($params['order_id'])) == "ASC" ? "ASC" : "DESC";
-            $qb->orderBy("m.id",$order);
+            $qb->orderBy("m.leftInd",$order);
         }
 
 	    // limit et offset
@@ -122,6 +131,10 @@ class MatriceRepository extends \Doctrine\ORM\EntityRepository
 	*/
 	public function InsertLeaft(Membre &$adherent, Matrice &$reference){
 
+		$steper = $reference->getRightInd() - $reference->getLeftInd();
+
+		//var_dump($reference->getMembre()->getUsername().' :['.$reference->getLeftInd().','.$reference->getRightInd().']');
+
 		/*UPDATE NEW_FAMILLE
 		SET NFM_BD = NFM_BD + 2
 		WHERE NFM_BD >= 35*/
@@ -129,7 +142,7 @@ class MatriceRepository extends \Doctrine\ORM\EntityRepository
 		$qb = $this->createQueryBuilder("m");
 		$q = $qb->update()
 		->set("m.rightInd","m.rightInd + 2")
-		->where($qb->exp()->gte("m.rightInd",":ref_right"))
+		->where($qb->expr()->gte("m.rightInd",":ref_right"))
 		->setParameter("ref_right",$reference->getRightInd())
 		->getQuery();
 		$p = $q->execute();
@@ -141,7 +154,7 @@ class MatriceRepository extends \Doctrine\ORM\EntityRepository
 		$qb = $this->createQueryBuilder("m");
 		$q = $qb->update()
 		->set("m.leftInd","m.leftInd + 2")
-		->where($qb->exp()->gte("m.leftInd",":ref_right"))
+		->where($qb->expr()->gte("m.leftInd",":ref_right"))
 		->setParameter("ref_right",$reference->getRightInd())
 		->getQuery();
 		$p = $q->execute();
@@ -155,7 +168,12 @@ class MatriceRepository extends \Doctrine\ORM\EntityRepository
 		$item->setLeftInd($reference->getRightInd());
 		$item->setRightInd($reference->getRightInd() + 1);
 		$item->setDepth($reference->getDepth() +1 );
+
+		if($steper > 1){
+
+		}
 		$this->_em->persist($item);
+		$this->_em->refresh($reference);
 	}
 
 	/**
@@ -173,9 +191,9 @@ class MatriceRepository extends \Doctrine\ORM\EntityRepository
 
 		$qb = $this->createQueryBuilder("m");
 		$q = $qb->delete()
-		->where($qb->exp()->andX(
-			$qb->exp()->gte("m.leftInd",":ref_left"),
-			$qb->exp()->lte("m.rightInd",":ref_right"),
+		->where($qb->expr()->andX(
+			$qb->expr()->gte("m.leftInd",":ref_left"),
+			$qb->expr()->lte("m.rightInd",":ref_right")
 		))
 		->setParameter("ref_left",$reference->getLeftInd())
 		->setParameter("ref_right",$reference->getRightInd())
@@ -190,7 +208,7 @@ class MatriceRepository extends \Doctrine\ORM\EntityRepository
 		$qb = $this->createQueryBuilder("m");
 		$q = $qb->update()
 		->set("m.leftInd","m.leftInd - :steper")
-		->where($qb->exp()->gt("m.leftInd",":ref_left"))
+		->where($qb->expr()->gt("m.leftInd",":ref_left"))
 		->setParameter("ref_left",$reference->getLeftInd())
 		->getQuery();
 		$p = $q->execute();
@@ -203,10 +221,12 @@ class MatriceRepository extends \Doctrine\ORM\EntityRepository
 		$qb = $this->createQueryBuilder("m");
 		$q = $qb->update()
 		->set("m.rightInd","m.rightInd - :steper")
-		->where($qb->exp()->gte("m.rightInd",":ref_left"))
+		->where($qb->expr()->gte("m.rightInd",":ref_left"))
 		->setParameter("ref_left",$reference->getLeftInd())
 		->getQuery();
 		$p = $q->execute();
+
+		$this->_em->refresh($reference);
 	}
 
 	/**
@@ -227,7 +247,7 @@ class MatriceRepository extends \Doctrine\ORM\EntityRepository
 		$qb = $this->createQueryBuilder("m");
 		$q = $qb->update()
 		->set("m.rightInd","m.rightInd + :steper")
-		->where($qb->exp()->gte("m.rightInd",":ref_right"))
+		->where($qb->expr()->gte("m.rightInd",":ref_right"))
 		->setParameter("ref_right",$reference->getRightInd())
 		->setParameter("steper",$steper)
 		->getQuery();
@@ -240,7 +260,7 @@ class MatriceRepository extends \Doctrine\ORM\EntityRepository
 		$qb = $this->createQueryBuilder("m");
 		$q = $qb->update()
 		->set("m.leftInd","m.leftInd + :steper")
-		->where($qb->exp()->gte("m.leftInd",":ref_right"))
+		->where($qb->expr()->gte("m.leftInd",":ref_right"))
 		->setParameter("ref_right",$reference->getRightInd())
 		->setParameter("steper",$steper)
 		->getQuery();
@@ -254,20 +274,34 @@ class MatriceRepository extends \Doctrine\ORM\EntityRepository
 		$node->setRightInd($reference->getRightInd() + $steper - 1);
 		$node->setDepth($reference->getDepth() +1 );
 
+
+		/*SELECT node.name, (COUNT(parent.name) - 1) AS depth
+		FROM nested_category AS node,
+		        nested_category AS parent
+		WHERE node.lft BETWEEN parent.lft AND parent.rgt
+		GROUP BY node.name
+		ORDER BY node.lft;*/
+
 		// mise a jour de la profondeur en dessous du noeud
-		$qb = $this->createQueryBuilder("m");
+		$qb = $this->createQueryBuilder("m")
+		->join("AppBundle\\Entity\\Matrice","p");
+
 		$q = $qb->update()
-		->set("m.depth",":new_depth")
-		->where($qb->exp()->andX(
-			$qb->exp()->gt("m.leftInd",":ref_left"),
-			$qb->exp()->lt("m.rightInd",":ref_right"),
+		->set("m.depth",$qb->expr()->count('p.membre_id') - 1)
+		->where($qb->expr()->andX(
+			$qb->expr()->andX(
+				$qb->expr()->gt("m.leftInd",":ref_left"),
+				$qb->expr()->lt("m.rightInd",":ref_right"),
+				$qb->expr()->between("m.leftInd","p.leftInd","p.rightInd")
+			)
 		))
+		->groupBy("m.membre_id")
 		->setParameter("ref_left",$node->getLeftInd())
 		->setParameter("ref_right",$node->getRightInd())
-		->setParameter("new_depth",$node->getDepth()+1)
 		->getQuery();
 		$p = $q->execute();
 
+		$this->_em->refresh($reference);
 	}
 
 	
@@ -283,6 +317,11 @@ class MatriceRepository extends \Doctrine\ORM\EntityRepository
 	public function whereId(QueryBuilder $qb,$value){
 		$qb->andWhere($qb->expr()->eq("m.id", ":id"))
 	    ->setParameter("id",$value);
+	}
+
+	public function whereMembreId(QueryBuilder $qb,$value){
+		$qb->andWhere($qb->expr()->eq("membre.id", ":membre_id"))
+	    ->setParameter("membre_id",$value);
 	}
 
 	public function whereLeftInd(QueryBuilder $qb,$value){
@@ -332,7 +371,7 @@ class MatriceRepository extends \Doctrine\ORM\EntityRepository
   	public function whereIsLeaft(QueryBuilder $qb){
 		$qb->andWhere(
 			$qb->expr()->eq("m.leftInd","m.rightInd - 1")
-		)
+		);
   	}
 
   	/**
@@ -343,7 +382,7 @@ class MatriceRepository extends \Doctrine\ORM\EntityRepository
   	public function whereIsNode(QueryBuilder $qb){
 		$qb->andWhere(
 			$qb->expr()->not($qb->expr()->eq("m.leftInd","m.rightInd - 1"))
-		)
+		);
   	}
 
   	/**
@@ -354,7 +393,7 @@ class MatriceRepository extends \Doctrine\ORM\EntityRepository
   	public function whereIsRoot(QueryBuilder $qb){
 		$qb->andWhere(
 			$qb->expr()->eq("m.leftInd",1)
-		)
+		);
   	}
 
   	/**
@@ -367,7 +406,7 @@ class MatriceRepository extends \Doctrine\ORM\EntityRepository
 		$qb
 		->andWhere($qb->expr()->andX(
 			$qb->expr()->lt("m.leftInd", ":ref_left"),
-			$qb->expr()->gt("m.rightInd", ":ref_right"),
+			$qb->expr()->gt("m.rightInd", ":ref_right")
 		))
 		->setParameter("ref_left",$leftInd)
 		->setParameter("ref_right",$rightInd);
@@ -384,7 +423,7 @@ class MatriceRepository extends \Doctrine\ORM\EntityRepository
 		$qb
 		->andWhere($qb->expr()->orX(
 			$qb->expr()->lt("m.leftInd", ":ref_left"),
-			$qb->expr()->gt("m.rightInd", ":ref_right"),
+			$qb->expr()->gt("m.rightInd", ":ref_right")
 		))
 		->setParameter("ref_left",$leftInd)
 		->setParameter("ref_right",$rightInd);
@@ -396,21 +435,61 @@ class MatriceRepository extends \Doctrine\ORM\EntityRepository
 	* @param integer $leftInd l'index gauche de la reference
 	* @param integer $rightInd l'index droit de la reference
 	*/
-	public function whereIsUnderAReference(QueryBuilder $qb,$leftInd,$rightInd){
+	public function whereIsUnderAReference(QueryBuilder $qb,$leftInd,$rightInd,$params = array()){
+		
 		$qb
 		->andWhere($qb->expr()->andX(
 			$qb->expr()->gt("m.leftInd", ":ref_left"),
-			$qb->expr()->lt("m.rightInd", ":ref_right"),
+			$qb->expr()->lt("m.rightInd", ":ref_right")
 		))
 		->setParameter("ref_left",$leftInd)
 		->setParameter("ref_right",$rightInd);
-	}
 
+		if(@$params['is_indirect_child']){
+			$qb
+			->andWhere($qb->expr()->gt("m.depth", ":ref_depth"))
+			->setParameter("ref_depth",$params['ref_depth']);
+		}
+
+		if(@$params['is_direct_child']){
+			$qb
+			->andWhere($qb->expr()->eq("m.depth", ":ref_depth"))
+			->setParameter("ref_depth",$params['ref_depth']);
+		}
+		
+		if(@$params['is_node_child']){
+			$qb->andWhere($qb->expr()->neq("m.leftInd", "m.rightInd - 1"));
+		}
+
+		if(@$params['is_leaft_child']){
+			$qb->andWhere($qb->expr()->eq("m.leftInd", "m.rightInd - 1"));
+		}
+
+	}
 	
 
 	public function count(array $params = array() ){
-        $qb = $this->createQueryBuilder('m');
+        $qb = $this->createQueryBuilder('m')
+        ->leftJoin("m.membre","membre");
+
+        $qb
+        ->select('count(m.id)');
+
         $this->addWhereClause($qb, $params);
+
+        return $qb->getQuery()
+        ->getSingleScalarResult();
+    }
+
+    public function generationCount(array $params = array() ){
+        $qb = $this->createQueryBuilder('m')
+        ->leftJoin("m.membre","membre");
+
+        $qb
+        ->select('max(m.depth)');
+
+        $this->addWhereClause($qb, $params);
+
         return $qb->getQuery()
         ->getSingleScalarResult();
     }

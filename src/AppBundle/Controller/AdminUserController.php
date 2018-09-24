@@ -34,10 +34,10 @@ class AdminUserController extends Controller
     	$rep = $em->getRepository(Membre::class);
         $rep_role = $em->getRepository(Role::class);
 
-    	$limit = intval($request->query->get('limit',20));
+    	$limit = intval($request->query->get('limit',50));
     	$offset = intval($request->query->get('offset',0));
 
-    	$limit = $limit > 20 ? 20 : $limit;
+    	$limit = $limit > 50 ? 50 : $limit;
     	$offset = $offset < 0 ? 0 : $offset;
 
         if($user_id){
@@ -145,8 +145,128 @@ class AdminUserController extends Controller
             return $response;
         }
 
+        $currentUser = null;
+
+        if($user_id){
+            $currentUser = array(
+                "data"=>null,
+                "stats"=>[
+                    "hierachical_parents"=>0,
+                    "children"=>0,
+                    "direct_children"=>0,
+                    "indirect_children"=>0,
+                    "direct_children_with_nodes"=>0,
+                    "direct_children_leaft"=>0,
+                    'indirect_children_leaft'=>0,
+                    "indirect_children_with_nodes"=>0,
+                    "generations"=>0
+                ]
+            );
+
+
+            $rep = $em->getRepository(\AppBundle\Entity\Matrice::class);
+            if(($node = $rep->findOneBy(["membre"=>$data[0]]))){
+
+                $currentUser['data'] = $node;
+
+                // les parrains hierachiques
+                $parrains = $rep->count([
+                    'is_reference_parent'=>true,
+                    "ref_left"=>$node->getLeftInd(),
+                    "ref_right"=>$node->getRightInd(),
+                ]);
+                $currentUser["stats"]['hierachical_parents'] = $parrains;
+
+                // les filleuls directs
+                $fd = $rep->count([
+                    'is_under_reference'=>true,
+                    "ref_left"=>$node->getLeftInd(),
+                    "ref_right"=>$node->getRightInd(),
+                    "depth"=>$node->getDepth() +1,
+                ]);
+                $currentUser["stats"]['direct_children'] = $fd;
+
+                // les filleuls indirects
+                $fd = $rep->count([
+                    'is_under_reference'=>true,
+                    'is_indirect_child'=>true,
+                    "ref_left"=>$node->getLeftInd(),
+                    "ref_right"=>$node->getRightInd(),
+                    "ref_depth"=>$node->getDepth()+1,
+                ]);
+                $currentUser["stats"]['indirect_children'] = $fd;
+
+                // les filleuls direct ayants aussi des filleuls
+                $fd = $rep->count([
+                    'is_under_reference'=>true,
+                    'is_node_child'=>true,
+                    'is_direct_child'=>true,
+                    "ref_left"=>$node->getLeftInd(),
+                    "ref_right"=>$node->getRightInd(),
+                    "ref_depth"=>$node->getDepth()+1,
+                ]);
+                $currentUser["stats"]['direct_children_with_nodes'] = $fd;
+
+                // les filleuls direct n'ayants pas des filleuls
+                $fd = $rep->count([
+                    'is_under_reference'=>true,
+                    'is_direct_child'=>true,
+                    'is_leaft_child'=>true,
+                    "ref_left"=>$node->getLeftInd(),
+                    "ref_right"=>$node->getRightInd(),
+                    "ref_depth"=>$node->getDepth()+1,
+                ]);
+                $currentUser["stats"]['direct_children_leaft'] = $fd;
+
+
+                // les filleuls indirect n'ayants pas des filleuls
+                $fd = $rep->count([
+                    'is_under_reference'=>true,
+                    'is_indirect_child'=>true,
+                    'is_leaft_child'=>true,
+                    "ref_left"=>$node->getLeftInd(),
+                    "ref_right"=>$node->getRightInd(),
+                    "ref_depth"=>$node->getDepth()+1,
+                ]);
+                $currentUser["stats"]['indirect_children_leaft'] = $fd;
+
+
+                // les filleuls indirect ayants aussi des filleuls
+                $fd = $rep->count([
+                    'is_under_reference'=>true,
+                    'is_node_child'=>true,
+                    'is_indirect_child'=>true,
+                    "ref_left"=>$node->getLeftInd(),
+                    "ref_right"=>$node->getRightInd(),
+                    "ref_depth"=>$node->getDepth()+1,
+                ]);
+                $currentUser["stats"]['indirect_children_with_nodes'] = $fd;
+
+                // tout les membres du reseau 
+                $fd = $rep->count([
+                    'is_under_reference'=>true,
+                    "ref_left"=>$node->getLeftInd(),
+                    "ref_right"=>$node->getRightInd(),
+                ]);
+                $currentUser["stats"]['children'] = $fd;
+
+                // le nombre de generation dans le reseau 
+                $fd = $rep->generationCount([
+                    'is_under_reference'=>true,
+                    "ref_left"=>$node->getLeftInd(),
+                    "ref_right"=>$node->getRightInd(),
+                ]);
+                $currentUser["stats"]['generations'] =  $fd ? $fd - intval($node->getDepth()) : 0;
+
+                
+
+                
+            }
+        }
+
     	return $this->render('account/admin/user/index.html.twig',array(
             "users"=>$data,
+            "currentUser"=>$currentUser,
             "roles"=>$rep_role->findAll(),
     		"form"=>$form->createView()
     	));
@@ -331,14 +451,19 @@ class AdminUserController extends Controller
         });
 
         try {
+            $em->getConnection()->beginTransaction();
             $reader->process();
             $em->flush();
             $this->addFlash('notice-success',"opération effectuée avec succes");
+            $em->getConnection()->commit();
         } catch (\Exception $e) {
+            $em->getConnection()->rollback();
             $this->addFlash('notice-error',$e->getMessage());
         }
 
         @unlink($file_path);
+
+        //return new Response('ok');
         return $this->redirectToRoute("admin_user_index");
     }
 

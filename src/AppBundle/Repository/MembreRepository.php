@@ -25,7 +25,7 @@ class MembreRepository extends \Doctrine\ORM\EntityRepository implements UserLoa
             ->getOneOrNullResult();
     }
 
-    public function search($params = array(),$limit = 16,$offset=0){
+    public function search($params = array(),$limit = 50,$offset=0){
 		$qb = $this->createQueryBuilder("u");
 
 		$params = array_filter($params,function($el){

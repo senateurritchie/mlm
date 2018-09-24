@@ -52,6 +52,7 @@ class MembreMetadata extends Metadata{
 
     	$fields = $this->getSheetHeader();
         $empty_cell = 0;
+        $dbParrain = [];
 
         foreach ($event->getValue() as $pos_f => $el) {
         	$field = $fields[$pos_f];
@@ -76,7 +77,10 @@ class MembreMetadata extends Metadata{
                         break;
 
                         case 'Code Parrain':
+
                             $membre->setParrain($choice);
+                            
+                        
                         break;
                 	}
                 }                   

@@ -1,0 +1,289 @@
+{% extends 'account/base.html.twig' %}
+
+{% set searchMode =  app.request.attributes.get('search_mode') %}
+
+{% block stylesheets %}
+	{{ parent() }}
+
+	<style>
+		.ml-1{
+			margin-left: 0.25rem !important;
+		}
+		.ml-2{
+			margin-left: 0.5rem !important;
+		}
+
+		#user-loading{
+			display: none;
+		}
+
+		#current-widget-user{
+			display: none;
+		}
+
+		
+
+		#right-section.user-loading #user-loading{
+			display: block;
+		}
+
+		#right-section.user-active #current-widget-user{
+			display: block;
+		}
+
+		#right-section.user-active #users-secondary-box,
+		#right-section.user-loading #users-secondary-box,
+		#right-section.user-loading #current-widget-user{
+			display: none;
+		}
+
+		.widget-user-privileges > div {
+			margin-right: 2px;
+		}
+
+		#current-widget-user #spinner{
+			display: none;
+		}
+
+		#current-widget-user.updating #spinner{
+			display: block;
+		}
+
+		.modal .overlay{
+			display: none;
+		}
+
+		.modal.updating .overlay{
+			display: flex;
+			position: absolute;
+			top: 0;
+			bottom: 0;
+			left: 0;
+			right: 0;
+			background: rgba(255,255,255,.4);
+			flex-direction: column;
+			justify-content: center;
+			align-items: center; 
+		}
+
+		.parrain-code{
+			border: 1px solid #dd4b39 !important;
+		}
+	</style>
+
+{% endblock %}
+
+{% block header_content %}
+	La Matrice <small>gestions de la matrice</small>
+{% endblock %}
+
+
+{% block body_content %}
+	
+	{{ include('account/admin/modal-info.html.twig') }}
+
+	<div class="row">
+    	<div class="col-xs-12 col-md-12">
+
+    		<div class="box box-primary my-border-purple box-solid">
+            	<div class="box-header with-border bg-purple">
+              		<h3 class="box-title">
+              			Souscripteur
+              		</h3>
+            	</div>
+            
+            	<!-- /.box-header -->
+            	<div class="box-body" id="data-container">
+              		<table class="table table-hover">
+		                <thead>
+		                	<tr>
+		                 		<th width="50">Image</th>
+		                 		<th>Nom & Prénom</th>
+		                 		<th>Date de Naissance</th>
+		                 		<th>Adresse email</th>
+		                 		<th>Corporation</th>
+		                 		<th>Code</th>
+		                  		<th style="text-align:center"></th>
+		                	</tr>
+	              		</thead>
+
+	              		<tbody>
+							<tr class="data-item">
+								<td class="data-item-image">
+									{% if node.membre.image %}
+										<img  style="height: 50px;" src="{{ asset('upload/public/'~node.membre.image) }}" alt="" />
+										
+									{% else %}
+										<img  style="height: 50px;" src="{{ asset('img/vignette-landscape.png') }}">
+									{% endif %}
+								</td>
+
+								<td>
+									<a href="" class="edit">
+										{{ node.membre.civility }}. {{ node.membre.username|lower|title }}
+									</a>
+								</td>
+
+								<td>
+									<a href="" class="edit">
+										{{ node.membre.birth|date("d M Y") }}
+									</a>
+								</td>
+
+								<td>{{ node.membre.email }}</td>
+
+								<td>
+									{{ node.membre.corporation ? node.membre.corporation.name|upper : '-' }}
+								</td>
+
+								<td>{{ node.membre.code }}</td>
+
+								<td>
+									<div class="btn-group">
+						            	<button type="button" class="btn bg-purple btn-flat">Menu</button>
+						              	<button type="button" class="btn bg-purple btn-flat dropdown-toggle" data-toggle="dropdown">
+						                	<span class="caret"></span>
+						                	<span class="sr-only">Toggle Dropdown</span>
+						              	</button>
+						              	<ul class="dropdown-menu pull-right" role="menu">
+						                	<li>
+						                		<a href="{{ path('admin_user_index',{'user_id':node.membre.id})}}">
+						                			Tableau de bord
+						                		</a>
+						                	</li>
+
+						                 	<li class="divider"></li>
+
+						                	<li class="{{ searchMode == 1 ? 'active' : ''}}">
+						                		<a href="{{ path('admin_node_index',{'node_id':node.id,'search_mode':1})}}">
+						                			Parrains ascendants
+						                		</a>
+						                	</li>
+
+						                	<li class="divider"></li>
+
+						                	<li class="{{ searchMode == 2 ? 'active' : ''}}">
+						                		<a href="{{ path('admin_node_index',{'node_id':node.id,'search_mode':2})}}">
+						                			Filleuls directs
+						                		</a>
+						                	</li>
+
+						                	<li class="{{ searchMode == 3 ? 'active' : ''}}">
+						                		<a href="{{ path('admin_node_index',{'node_id':node.id,'search_mode':3})}}">
+						                			Filleuls directs sans reseau
+						                		</a>
+						                	</li>
+
+						                	<li class="{{ searchMode == 4 ? 'active' : ''}}">
+						                		<a href="{{ path('admin_node_index',{'node_id':node.id,'search_mode':4})}}">
+						                			Filleuls directs avec reseau
+						                		</a>
+						                	</li>
+
+						                	<li class="divider"></li>
+
+						                	<li class="{{ searchMode == 5 ? 'active' : ''}}">
+						                		<a href="{{ path('admin_node_index',{'node_id':node.id,'search_mode':5})}}">
+						                			Filleuls indirects
+						                		</a>
+						                	</li>
+
+						                	<li class="{{ searchMode == 6 ? 'active' : ''}}">
+						                		<a href="{{ path('admin_node_index',{'node_id':node.id,'search_mode':6})}}">
+						                			Filleuls indirects sans reseau
+						                		</a>
+						                	</li>
+
+						                	<li class="{{ searchMode == 7 ? 'active' : ''}}">
+						                		<a href="{{ path('admin_node_index',{'node_id':node.id,'search_mode':7})}}">
+						                			Filleuls indirects avec reseau
+						                		</a>
+						                	</li>
+
+											<li class="divider"></li>
+
+						                	<li class="{{ searchMode == 8 ? 'active' : ''}}">
+						                		<a href="{{ path('admin_node_index',{'node_id':node.id,'search_mode':8})}}">
+						                			Tous le reseau
+						                		</a>
+						                	</li>
+						              </ul>
+						            </div>
+								</td>
+							</tr>
+	              		</tbody>
+              		</table>
+              	</div>
+            </div>
+
+        	<div class="box box-primary no-border">
+            	<div class="box-header">
+              		<h3 class="box-title" style="text-transform:uppercase">
+              			{% if searchMode == 1 %}
+              				Les parrains ascendants
+              			{% elseif searchMode == 2 %}
+              				Les filleuls directs
+              			{% elseif searchMode == 3 %}
+              				Les filleuls direct sans reseau
+              			{% elseif searchMode == 4 %}
+              				Les filleuls direct avec reseau
+              			{% elseif searchMode == 5 %}
+              				Les filleuls indirects
+              			{% elseif searchMode == 6 %}
+              				Les filleuls indirects sans reseau
+              			{% elseif searchMode == 7 %}
+              				Les filleuls indirects avec reseau
+              			{% elseif searchMode == 8 %}
+              				Tous le reseau
+              			{% endif %}
+              		</h3>
+            	</div>
+            
+            	<!-- /.box-header -->
+            	<div class="box-body" id="data-container">
+
+
+
+            		{% if data|length %}
+	              		<table class="table table-hover">
+			                <thead>
+			                	<tr>
+			                 		<th width="50">Image</th>
+			                 		<th>Nom & Prénom</th>
+			                 		<th>Adresse email</th>
+			                 		<th>Corporation</th>
+			                 		<th>Ajouté le</th>
+			                  		<th>Code</th>
+			                  		<th></th>
+			                	</tr>
+		              		</thead>
+
+		              		<tbody>
+		              			{{ include('account/admin/matrice/item-render.html.twig') }}
+		              		</tbody>
+	              		</table>
+	              	{% else %}
+	              		<div class="alert alert-warning">
+	              			<h3>Recherche infructueuse</h3>
+
+	              			<div class="text">
+	              				Désolé il n'ya pas de resultat disponible.
+	              			</div>
+	              		</div>
+	              	{% endif %}
+            	</div>  
+            </div>
+        </div>
+    </div>
+
+{% endblock %}
+
+{% block javascripts %}
+	{{ parent() }}
+
+	<script src="{{ asset('js/admin/manager.js') }}"></script>
+	<script src="{{ asset('js/admin/matrice/manager.js') }}"></script>
+	<script src="{{ asset('js/admin/matrice/index.js') }}"></script>
+	
+{% endblock %}
+

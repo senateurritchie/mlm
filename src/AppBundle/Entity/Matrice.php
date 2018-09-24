@@ -24,8 +24,8 @@ class Matrice
 
     /**
     * @var AppBundle\Entity\Membre
-    * @ORM\ManyToOne(targetEntity="AppBundle\Entity\Membre")
-    * @ORM\JoinColumn(onDelete="SET NULL")
+    * @ORM\ManyToOne(targetEntity="AppBundle\Entity\Membre"))
+    * @ORM\JoinColumn(onDelete="CASCADE")
     */
     private $membre;
 

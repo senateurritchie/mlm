@@ -6,6 +6,7 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
 use Symfony\Component\Security\Core\Encoder\UserPasswordEncoderInterface;
 
 use AppBundle\Entity\Membre;
+use AppBundle\Entity\Matrice;
 
 class GeneralListener{
 
@@ -13,6 +14,7 @@ class GeneralListener{
     * @var UserPasswordEncoderInterface 
     */
     private $encoder;
+    
 
     public function __construct(UserPasswordEncoderInterface $encoder){
         $this->encoder = $encoder;
@@ -20,6 +22,7 @@ class GeneralListener{
 
     public function prePersist(LifecycleEventArgs $args){
         $entity = $args->getEntity();
+        $manager = $args->getEntityManager();
 
         if ($entity instanceof Membre) {
             $plainPassword = 'bbmlm';
@@ -30,6 +33,12 @@ class GeneralListener{
             if(($el = $entity->getParrain())){
                 $nbr = intval($el->getChildNbr())+1;
                 $el->setChildNbr($nbr);
+
+                $rep = $manager->getRepository(Matrice::class);
+                //var_dump("on rentre");
+                if(($reference = $rep->findOneBy(['membre'=>$el]))){
+                    $rep->InsertLeaft($entity,$reference);
+                }
             }
 
             if(($el = $entity->getCorporation())){

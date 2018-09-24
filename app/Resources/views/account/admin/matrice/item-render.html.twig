@@ -1,0 +1,101 @@
+{% for item in data %}
+	<tr class="data-item" data-id="{{ item.id }}">
+		<td class="data-item-image">
+			{% if item.membre.image %}
+				<img  style="height: 50px;" src="{{ asset('upload/public/'~item.membre.image) }}" alt="" />
+				
+			{% else %}
+				<img  style="height: 50px;" src="{{ asset('img/vignette-landscape.png') }}">
+			{% endif %}
+		</td>
+
+		<td>
+			{{ item.membre.civility }}. {{ item.membre.username|lower|title }}
+		</td>
+
+		<td>{{ item.membre.email }}</td>
+
+		<td>{{ item.membre.corporation ? item.membre.corporation.name|upper : '-' }}</td>
+
+		<td>
+    		{{ item.createAt|date('d M Y à H:i') }}
+		</td>
+
+		<td>
+            {{ item.membre.code }}
+		</td>
+
+        <td>
+            <div class="btn-group">
+                <button type="button" class="btn bg-purple btn-flat">Menu</button>
+                <button type="button" class="btn bg-purple btn-flat dropdown-toggle" data-toggle="dropdown">
+                    <span class="caret"></span>
+                    <span class="sr-only">Toggle Dropdown</span>
+                </button>
+                <ul class="dropdown-menu pull-right" role="menu">
+                    <li>
+                        <a href="{{ path('admin_user_index',{'user_id':item.membre.id})}}">
+                            Tableau de bord
+                        </a>
+                    </li>
+
+                    <li class="divider"></li>
+
+                    <li >
+                        <a href="{{ path('admin_node_index',{'node_id':item.id,'search_mode':1})}}">
+                            Parrains ascendants
+                        </a>
+                    </li>
+
+                    <li class="divider"></li>
+
+                    <li >
+                        <a href="{{ path('admin_node_index',{'node_id':item.id,'search_mode':2})}}">
+                            Filleuls directs
+                        </a>
+                    </li>
+
+                    <li >
+                        <a href="{{ path('admin_node_index',{'node_id':item.id,'search_mode':3})}}">
+                            Filleuls directs sans reseau
+                        </a>
+                    </li>
+
+                    <li >
+                        <a href="{{ path('admin_node_index',{'node_id':item.id,'search_mode':4})}}">
+                            Filleuls directs avec reseau
+                        </a>
+                    </li>
+
+                    <li class="divider"></li>
+
+                    <li >
+                        <a href="{{ path('admin_node_index',{'node_id':item.id,'search_mode':5})}}">
+                            Filleuls indirects
+                        </a>
+                    </li>
+
+                    <li >
+                        <a href="{{ path('admin_node_index',{'node_id':item.id,'search_mode':6})}}">
+                            Filleuls indirects sans reseau
+                        </a>
+                    </li>
+
+                    <li >
+                        <a href="{{ path('admin_node_index',{'node_id':item.id,'search_mode':7})}}">
+                            Filleuls indirects avec reseau
+                        </a>
+                    </li>
+
+                    <li class="divider"></li>
+
+                    <li >
+                        <a href="{{ path('admin_node_index',{'node_id':item.id,'search_mode':8})}}">
+                            Tous le reseau
+                        </a>
+                    </li>
+              </ul>
+            </div>
+        </td>
+	</tr>
+{% endfor %}
