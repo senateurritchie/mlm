@@ -1,0 +1,304 @@
+{% extends 'account/base.html.twig' %}
+
+{% block header_content %}
+    Tableau de bord <small> l'espace de monitoring de la palateforme</small>
+{% endblock %}
+
+{% block body_content %}
+	<div class="row">
+        <div class="col-lg-3 col-xs-6">
+         	<!-- small box -->
+          	<div class="small-box bg-teal-gradient">
+            	<div class="inner">
+              		<h3>0</h3>
+              		<p>Les Souscripteurs</p>
+            	</div>
+            
+            	<div class="icon">
+              		<i class="fa fa-share-alt"></i>
+            	</div>
+            	<a href="{{ path('admin_user_index') }}" class="small-box-footer">
+                   Voir plus <i class="fa fa-arrow-circle-right"></i>
+                </a>
+          	</div>
+        </div>
+
+        <!-- ./col -->
+        <div class="col-lg-3 col-xs-6">
+        	<!-- small box -->
+          	<div class="small-box bg-teal-gradient">
+            	<div class="inner">
+              		<h3>0</h3>
+              		<p>Les Parrains</p>
+            	</div>
+            	
+            	<div class="icon">
+              		<i class="fa fa-users"></i>
+            	</div>
+            	<a href="" class="small-box-footer">
+                    Voir plus <i class="fa fa-arrow-circle-right"></i>
+                </a>
+          	</div>
+        </div>
+       
+
+        <div class="col-lg-3 col-xs-6">
+            <!-- small box -->
+            <div class="small-box bg-teal-gradient">
+                <div class="inner">
+                    <h3>0</h3>
+
+                    <p>Les feuilles</p>
+                </div>
+                <div class="icon">
+                    <i class="fa fa-users"></i>
+                </div>
+                <a href="" class="small-box-footer">Voir plus <i class="fa fa-arrow-circle-right"></i></a>
+            </div>
+        </div>
+
+        <div class="col-lg-3 col-xs-6">
+        	<!-- small box -->
+          	<div class="small-box bg-teal-gradient">
+            	<div class="inner">
+              		<h3>0</h3>
+
+              		<p>Nombre de Générations</p>
+            	</div>
+            	<div class="icon">
+              		<i class="fa fa-share-alt"></i>
+            	</div>
+            	<a href="" class="small-box-footer">Voir plus <i class="fa fa-arrow-circle-right"></i></a>
+          	</div>
+        </div>
+    </div>
+
+    <div class="row">
+
+        <div class="col-md-6">
+            <div class="box box-solid bg-teal-gradient">
+                <div class="box-header">
+                    <i class="fa fa-th"></i>
+                    <h3 class="box-title">Courbe des souscripteurs</h3>
+
+                    <div class="box-tools pull-right">
+                        <button type="button" class="btn bg-teal btn-sm" data-widget="collapse">
+                            <i class="fa fa-minus"></i>
+                        </button>
+                    </div>
+                </div>
+
+                <div class="box-body border-radius-none">
+                    <div class="chart" id="line-chart" style="height: 250px;"></div>
+                </div>
+
+                <!-- /.box-body -->
+                <div class="box-footer no-border">
+                    <div class="row">
+                        <div class="col-xs-6 text-center" style="border-right: 1px solid #f4f4f4">
+                            <input type="text" class="knob" data-readonly="true" value="70" data-width="60" data-height="60" data-fgColor="#39CCCC">
+
+                            <div class="knob-label">Actifs</div>
+                        </div>
+                        <!-- ./col -->
+                    
+                        <div class="col-xs-6 text-center" style="border-right: 1px solid #f4f4f4">
+                            <input type="text" class="knob" data-readonly="true" value="30" data-width="60" data-height="60" data-fgColor="#39CCCC">
+                            <div class="knob-label">Inactifs</div>
+                        </div>
+                    
+                        
+                        <!-- ./col -->
+                    </div>
+                    
+                </div>
+                <!-- /.box-footer -->
+            </div>
+            <!-- /.box -->
+        </div>
+
+        <div class="col-md-6">
+            <div class="box box-solid bg-teal-gradient">
+                <div class="box-header">
+                    <i class="fa fa-th"></i>
+                    <h3 class="box-title">Courbe des souscriptions</h3>
+
+                    <div class="box-tools pull-right">
+                        <button type="button" class="btn bg-teal btn-sm" data-widget="collapse">
+                            <i class="fa fa-minus"></i>
+                        </button>
+                    </div>
+                </div>
+
+                <div class="box-body border-radius-none">
+                    <div class="chart" id="line-chart-2" style="height: 250px;"></div>
+                </div>
+
+                <!-- /.box-body -->
+                <div class="box-footer no-border">
+                    <div class="row">
+                        <div class="col-xs-6 text-center" style="border-right: 1px solid #f4f4f4">
+                            <input type="text" class="knob" data-readonly="true" value="20" data-width="60" data-height="60" data-fgColor="#39CCCC">
+
+                            <div class="knob-label">Versées</div>
+                        </div>
+                        <!-- ./col -->
+                    
+                        <div class="col-xs-6 text-center" style="border-right: 1px solid #f4f4f4">
+                            <input type="text" class="knob" data-readonly="true" value="50" data-width="60" data-height="60" data-fgColor="#39CCCC">
+
+                            <div class="knob-label">Non Versées</div>
+                        </div>
+                    
+                    </div>
+                    <!-- /.row -->
+                </div>
+                <!-- /.box-footer -->
+            </div>
+            <!-- /.box -->
+        </div>
+    </div>
+
+    <div class="row">
+        
+        <div class="col-md-12">
+            <div class="box box-solid">
+
+                <div class="box-header">
+                    <i class="fa fa-th"></i>
+                    <h3 class="box-title">Autres...</h3>
+
+                    <div class="box-tools pull-right">
+                        <button type="button" class="btn bg-teal btn-sm" data-widget="collapse">
+                            <i class="fa fa-minus"></i>
+                        </button>
+                    
+                    </div>
+                </div>
+
+                <div class="box-body">
+
+                    <div class="row">
+                        <div class="col-xs-3 text-center" style="border-right: 1px solid #f4f4f4">
+                            <input type="text" class="knob" data-readonly="true" value="20" data-width="100" data-height="100" data-fgColor="#39CCCC">
+
+                            <div class="knob-label">Managers</div>
+                        </div>
+                        <!-- ./col -->
+                    
+                        <div class="col-xs-3 text-center" style="border-right: 1px solid #f4f4f4">
+                            <input type="text" class="knob" data-readonly="true" value="15" data-width="100" data-height="100" data-fgColor="#39CCCC">
+                            <div class="knob-label">Managers Adjoints</div>
+                        </div>
+                    
+                        <!-- ./col -->
+                        <div class="col-xs-3 text-center">
+                            <input type="text" class="knob" data-readonly="true" value="30" data-width="100" data-height="100" data-fgColor="#39CCCC">
+                            <div class="knob-label">Animateurs</div>
+                        </div>
+                        <!-- ./col -->
+
+                        <!-- ./col -->
+                        <div class="col-xs-3 text-center">
+                            <input type="text" class="knob" data-readonly="true" value="7" data-width="100" data-height="100" data-fgColor="#39CCCC">
+                            <div class="knob-label">Animateurs Adjoints</div>
+                        </div>
+                        <!-- ./col -->
+                    </div>
+
+                    <hr>
+
+                    <div class="row">
+                        <div class="col-xs-12 text-center" style="border-right: 1px solid #f4f4f4">
+                            <input type="text" class="knob" data-readonly="true" value="28" data-width="250" data-height="250" data-fgColor="#39CCCC">
+
+                            <div class="knob-label">Novus Customers</div>
+                        </div>
+                       
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+{% endblock %}
+
+{% block javascripts %}
+    {{ parent() }}
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/raphael/2.1.0/raphael-min.js"></script>
+    <script src="{{ asset('admin/plugins/morris/morris.min.js') }}"></script>
+    <script src="{{ asset('admin/plugins/knob/jquery.knob.js') }}"></script>
+
+    <script>
+        $(document).ready(function($){
+            /* Morris.js Charts */
+            
+            var line = new Morris.Line({
+                element: 'line-chart',
+                parseTime:false,
+                resize: true,
+                data: [
+                  {y: 'Jan', item1: 2666},
+                  {y: 'Feb', item1: 2778},
+                  {y: 'Mar', item1: 4912},
+                  {y: 'Apr', item1: 3767},
+                  {y: 'May', item1: 6810},
+                  {y: 'Jun', item1: 5670},
+                  {y: 'Jul', item1: 4820},
+                  {y: 'Aou', item1: 15073},
+                  {y: 'Sep', item1: 10687},
+                  {y: 'Oct', item1: 8432},
+                  {y: 'Nov', item1: 8432},
+                  {y: 'Dec', item1: 20432},
+                ],
+                xkey: 'y',
+                ykeys: ['item1'],
+                labels: ['Item 1'],
+                lineColors: ['#efefef'],
+                lineWidth: 2,
+                hideHover: 'auto',
+                gridTextColor: "#fff",
+                gridStrokeWidth: 0.4,
+                pointSize: 4,
+                pointStrokeColors: ["#efefef"],
+                gridLineColor: "#efefef",
+                gridTextFamily: "Open Sans",
+                gridTextSize: 10
+            });
+
+            var line = new Morris.Line({
+                element: 'line-chart-2',
+                resize: true,
+                data: [
+                  {y: '2011 Q1', item1: 2666},
+                  {y: '2011 Q2', item1: 2778},
+                  {y: '2011 Q3', item1: 4912},
+                  {y: '2011 Q4', item1: 20856},
+                  {y: '2012 Q1', item1: 6810},
+                  {y: '2012 Q2', item1: 5670},
+                  {y: '2012 Q3', item1: 4820},
+                  {y: '2012 Q4', item1: 15073},
+                  {y: '2013 Q1', item1: 10687},
+                  {y: '2013 Q2', item1: 8432}
+                ],
+                xkey: 'y',
+                ykeys: ['item1'],
+                labels: ['Item 1'],
+                lineColors: ['#efefef'],
+                lineWidth: 2,
+                hideHover: 'auto',
+                gridTextColor: "#fff",
+                gridStrokeWidth: 0.4,
+                pointSize: 4,
+                pointStrokeColors: ["#efefef"],
+                gridLineColor: "#efefef",
+                gridTextFamily: "Open Sans",
+                gridTextSize: 10
+            });
+
+            /* jQueryKnob */
+            $(".knob").knob();
+        });
+    </script>
+{% endblock %}

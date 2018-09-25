@@ -233,6 +233,13 @@
                             </a>
                         </li>
 
+                        <li class="{{ route == 'admin_dashboard_index' ? 'active': ''}}">
+                            <a href="{{ path('admin_dashboard_index') }}">
+                                <i class="fa fa-shield"></i> 
+                                <span>Tableau de bord</span>
+                            </a>
+                        </li>
+
                         <li class="header">Menu Principal</li>
 
                         <li class="{{ route == 'admin_user_index' ? 'active': ''}}">
