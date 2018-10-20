@@ -18,7 +18,6 @@ abstract class HeaderValidator extends Validator{
 
 		$msg_error = "l'entête du fichier excel n'est pas valide. Utilisez l'entête suivante: ".implode(", ", $this->fields);
 
-
 		if(count($this->fields) != count($value)){
 			return $msg_error;
 		}

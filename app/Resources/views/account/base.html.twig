@@ -245,9 +245,17 @@
                         <li class="{{ route == 'admin_user_index' ? 'active': ''}}">
                             <a href="{{ path('admin_user_index') }}">
                                 <i class="fa fa-users"></i> 
-                                <span>Membres</span>
+                                <span>Base de données</span>
                             </a>
                         </li>
+
+                        <li class="{{ route == 'admin_cc_index' ? 'active': ''}}">
+                            <a href="{{ path('admin_cc_index') }}">
+                                <i class="fa fa-users"></i> 
+                                <span>Case Crédit</span>
+                            </a>
+                        </li>
+
 
                         {#<li class="{{ route == 'admin_purchase_index' ? 'active': ''}}">
                             <a href="{{ path('admin_purchase_index') }}">
