@@ -291,6 +291,7 @@ class AdminUserController extends Controller
             throw $this->createNotFoundException();
         }
 
+
         $cloned = clone($item);
         $oldImage = $item->getImage();
 

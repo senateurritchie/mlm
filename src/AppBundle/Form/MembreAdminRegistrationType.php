@@ -112,9 +112,9 @@ class MembreAdminRegistrationType extends AbstractType
             "attr"=>["class"=>"input-sm"],
             "label"=>"Civilité",
             "choices"=>[
-                "M"=>"Monsieur",
-                "Mme"=>"Madame",
-                "Mlle"=>"mademoiselle",
+                "M"=>"M",
+                "Mme"=>"Mme",
+                "Mlle"=>"Mlle",
             ],
         ))
         ->add('birth', DateType::class,array(
