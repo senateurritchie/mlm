@@ -15,6 +15,7 @@ use AppBundle\Entity\Membre;
 use AppBundle\Entity\Role;
 use AppBundle\Entity\MembreRole;
 use AppBundle\Form\MembreAdminRegistrationType;
+use AppBundle\Form\MembreResearchType;
 
 /**
 * @Route("/admin/users", name="admin_user_")
@@ -159,7 +160,11 @@ class AdminUserController extends Controller
                     "direct_children_leaft"=>0,
                     'indirect_children_leaft'=>0,
                     "indirect_children_with_nodes"=>0,
-                    "generations"=>0
+                    "generations"=>0,
+                    "personal_cc"=>0,
+                    "bonus_novus_customer"=>0,
+                    "bonus_group"=>0,
+                    "bonus_leadership"=>0,
                 ]
             );
 
@@ -256,19 +261,42 @@ class AdminUserController extends Controller
                     "ref_left"=>$node->getLeftInd(),
                     "ref_right"=>$node->getRightInd(),
                 ]);
+
                 $currentUser["stats"]['generations'] =  $fd ? $fd - intval($node->getDepth()) : 0;
 
-                
+                $rep_cc = $em->getRepository(\AppBundle\Entity\CaseCredit::class);
 
-                
+                // case credit personnel
+                $fd = $rep_cc->ccPersonnel([
+                    'fbo_id'=>$user_id,
+                ]);
+                $currentUser["stats"]['personal_cc'] = $fd;
+
+
+                $current_user = $data[0];
+
+                // bonus novus customer
+                $fd = $rep->generateBonus([
+                    "left_ind"=>$node->getLeftInd(),
+                    "right_ind"=>$node->getRightInd(),
+                    "current_user_type"=>$current_user->getType()->getCode(),
+                    "current_user_depth"=>$node->getDepth(),
+                ]);
+
+                $currentUser["stats"]['bonus_novus_customer'] = floatval($fd["bonus_novus_customer"]);
+                $currentUser["stats"]['bonus_group'] = floatval($fd["bonus_group"]);
             }
         }
+
+        $formResearch = $this->createForm(MembreResearchType::class,new Membre(),[
+        ]);
 
     	return $this->render('account/admin/user/index.html.twig',array(
             "users"=>$data,
             "currentUser"=>$currentUser,
             "roles"=>$rep_role->findAll(),
-    		"form"=>$form->createView()
+    		"form"=>$form->createView(),
+            "form_search"=>$formResearch->createView()
     	));
     }
 

@@ -1,8 +1,11 @@
 {% extends 'account/base.html.twig' %}
 
 {% form_theme form 'bootstrap_3_layout.html.twig' %}
+{% form_theme form_search 'bootstrap_3_layout.html.twig' %}
 
 {% set use_modal = 'insert' %}
+{% set is_search_opened = app.request.query.has('search_on') %}
+{% set exportData = app.request.query.all() %}
 
 
 {% block stylesheets %}
@@ -166,6 +169,104 @@
 	            </div>
             {% endfor %}
 
+            <div class="box box-primary {{ is_search_opened ? '' : 'collapsed-box' }} my-border-purple">
+    			<div class="box-header">
+              		<h3 class="box-title">Recherches detaillées</h3>
+
+              		<div class="box-tools pull-right">
+						<button type="button" class="btn btn-box-tool" data-widget="collapse">
+							<i class="fa {{ is_search_opened ? 'fa-minus' : 'fa-plus' }}"></i>
+                		</button>
+			  		</div>
+            	</div>
+
+    			{{ form_start(form_search,{"method":"GET"}) }}
+	    			<div class="box-body">
+	                    <div class="row">
+
+	                    	<div class="col-md-4 col-sm-6 col-xs-12">
+	                        	<div class="row">
+		                        	<div class="col-md-6">
+		                        		{{ form_row(form_search.code) }}
+		                        	</div>
+
+		                        	<div class="col-md-6">
+		                        		{{ form_row(form_search.parrain_code) }}
+		                        	</div>
+		                        </div>
+	                        </div>
+
+	                    	<div class="col-md-2 col-sm-6 col-xs-12">
+	                            {{ form_row(form_search.corporation) }}
+	                        </div>
+
+	                        
+
+	                        <div class="col-md-4 col-sm-6 col-xs-12">
+	                        	<div class="row">
+		                        	<div class="col-md-6">
+		                        		{{ form_row(form_search.date) }}
+		                        	</div>
+
+		                        	<div class="col-md-6">
+		                        		{{ form_row(form_search.dateFin) }}
+		                        	</div>
+		                        </div>
+	                        </div>
+
+	                        <div class="col-md-2 col-sm-6 col-xs-12">
+	                        	{{ form_row(form_search.quality) }}
+	                        </div>
+	                    </div>   
+
+	                  
+
+	                    <div class="row">
+	                    	<div class="col-md-6 col-sm-6 col-xs-12">
+	                        	<div class="row">
+	                        		<div class="col-md-3">
+	                            		{{ form_row(form_search.order_name, {"attr":{"class":"form-control-sm input-sm","label":'Affichage par nom'}}) }}
+	                        		</div>
+
+	                        		<div class="col-md-3">
+	                            		{{ form_row(form_search.order_year, {"attr":{"class":"form-control-sm input-sm","label":"Affichage par année"}}) }}
+	                        		</div>
+
+	                        		<div class="col-md-3">
+	                            		{{ form_row(form_search.order_id, {"attr":{"class":"form-control-sm input-sm","label":"Affichage par entrée"}}) }}
+	                        		</div>
+
+	                        		<div class="col-md-3">
+	                            		{{ form_row(form_search.limit, {"attr":{"class":"form-control-sm input-sm text-center"}}) }}
+	                        		</div>
+	                        	</div>
+	                        </div>
+	                    </div>
+	    			</div>
+
+	    			<div class="box-footer">
+
+	    				<input type="hidden" name="search_on" value="1" />
+
+	    				
+						<button class="btn btn-sm bg-purple">
+							Recherche
+						</button>
+
+	                    {% if is_search_opened %}
+	                    	<span class="pull-right">
+	         
+	                            <a  href="{{ path('admin_user_index') }}"  class="btn btn-sm bg-purple">
+	                                <i class="fa fa-trash"></i>  Vider les champs
+	                            </a>
+	                    	</span>
+                            
+                        {% endif %}
+	    			</div>
+	    		{{ form_end(form_search) }}
+
+    		</div>
+
         	<div class="box box-primary my-border-purple">
             	<div class="box-header">
               		<h3 class="box-title">
@@ -203,7 +304,7 @@
 		                 		<th>Corporation</th>
 		                  		<th>Ajouté le</th>
 		                  		<th>Etat</th>
-		                  		<th style="text-align:center">Filleuls</th>
+		                  		<th>Qualité</th>
 		                  		<th style="text-align:center"></th>
 		                	</tr>
 	              		</thead>
@@ -385,7 +486,7 @@
 						            <!-- small box -->
 						            <div class="small-box bg-purple">
 						                <div class="inner">
-						                    <h3>0 CC</h3>
+						                    <h3>{{ currentUser.stats.personal_cc }} CC</h3>
 						                    <p>Case Crédit Personnel</p>
 						                </div>
 						            
@@ -402,7 +503,7 @@
 						            <!-- small box -->
 						            <div class="small-box bg-purple">
 						                <div class="inner">
-						                    <h3>0 CC</h3>
+						                    <h3>{{ currentUser.stats.bonus_novus_customer }} CC</h3>
 
 						                    <p>Bonus Novus Customer</p>
 						                </div>
@@ -417,7 +518,7 @@
 						        	<!-- small box -->
 						          	<div class="small-box bg-purple">
 						            	<div class="inner">
-						              		<h3>0 CC</h3>
+						              		<h3>{{ currentUser.stats.bonus_group }} CC</h3>
 
 						              		<p>Bonus de Groupe</p>
 						            	</div>

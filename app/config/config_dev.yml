@@ -45,7 +45,7 @@ parameters:
         name: 'webmaster'
         email: 'zakeszako@yahoo.fr'
     app.site: 
-        name:   'BB MLM'
-        email:  'webmaster@bbmlm.ci'
-        url:    'http://bbmlm.local'
+        name:   'Bill EG'
+        email:  'webmaster@billeg.ci'
+        url:    'http://billeg.local'
     

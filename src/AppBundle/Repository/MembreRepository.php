@@ -16,8 +16,8 @@ class MembreRepository extends \Doctrine\ORM\EntityRepository implements UserLoa
 {
 	public function loadUserByUsername($username){
         return $this->createQueryBuilder('u')
-            ->where('u.username = :username OR u.email = :email')
-            ->andWhere('u.state = :state')
+            ->where('m.username = :username OR m.email = :email')
+            ->andWhere('m.state = :state')
             ->setParameter('username', $username)
             ->setParameter('email', $username)
             ->setParameter('state', "activate")
@@ -25,10 +25,9 @@ class MembreRepository extends \Doctrine\ORM\EntityRepository implements UserLoa
             ->getOneOrNullResult();
     }
 
-    public function search($params = array(),$limit = 50,$offset=0){
-		$qb = $this->createQueryBuilder("u");
+    public function addWhereClause(&$qb,&$params){
 
-		$params = array_filter($params,function($el){
+        $params = array_filter($params,function($el){
             if(is_array($el)){
                 return $el;
             }
@@ -45,25 +44,72 @@ class MembreRepository extends \Doctrine\ORM\EntityRepository implements UserLoa
 			$this->whereId($qb,@$params["id"]);
 		}
 
-		// ordre d'affichage par nom
+		// recherche par code
+		if(@$params["code"]){
+			$this->whereCode($qb,@$params["code"]);
+		}
+		// recherche par parrain_code
+		if(@$params["parrain_code"]){
+			$this->whereParrainCode($qb,@$params["parrain_code"]);
+		}
+		// recherche par quality
+		if(@$params["quality"]){
+			$this->whereQuality($qb,@$params["quality"]);
+		}
+
+		// recherche par corporation
+		if(@$params["corporation"]){
+			$this->whereCorporation($qb,@$params["corporation"]);
+		}
+
+		// recherche par année
+        if(@$params["date"] && @$params["dateFin"]){
+            $this->whereDateRange($qb,$params["date"],$params["dateFin"]);
+        }
+        else if(@$params["date"]){
+            $this->whereDate($qb,$params["date"]);
+        }
+
+        return $this;
+    }
+
+    public function search($params = array(),$limit = 50,$offset=0){
+		$qb = $this->createQueryBuilder("m")
+		->leftJoin("m.parrain","parrain")
+        ->innerJoin("m.corporation","corporation")
+        ->innerJoin("m.type","type");
+
+		$this->addWhereClause($qb,$params);
+
+		// ordre d'affichage par id
+        if(@$params['order_id']){
+            $order = strtoupper(trim($params['order_id'])) == "ASC" ? "ASC" : "DESC";
+
+            $qb->orderBy("m.id",$order);
+        }
+
+		if(!@$params['order_id'] && !@$params["order_name"]){
+    		$params["order_name"] = "asc";
+    	}
+
+		// ordre d'affichage par nom de programme
 		if(@$params['order_name']){
 			$order = strtoupper(trim($params['order_name'])) == "ASC" ? "ASC" : "DESC";
-			$qb->orderBy("u.username",$order);
+			$qb->orderBy("m.username",$order);
 		}
 
-		// ordre d'affichage par date
+		// ordre d'affichage par date e production
 		if(@$params['order_year']){
 			$order = strtoupper(trim($params['order_year'])) == "ASC" ? "ASC" : "DESC";
-			$qb->orderBy("u.createAt",$order);
-		}
-
-		if(!@$params['order_name'] && !@$params['order_year']){
-			$qb->orderBy("u.id","DESC");
+			$qb->orderBy("m.createAt",$order);
 		}
 
 	    // limit et offset
-	    $qb->setFirstResult( $offset )
-   		->setMaxResults( $limit );
+        if($limit != -1){
+            $qb
+            ->setFirstResult( $offset )
+            ->setMaxResults( $limit );
+        }
 
    		$query = $qb->getQuery();
 
@@ -72,20 +118,68 @@ class MembreRepository extends \Doctrine\ORM\EntityRepository implements UserLoa
 
 
 	public function whereTerms(QueryBuilder $qb,$value){
-		$qb->andWhere($qb->expr()->like("u.username", ":q"))
+		$qb->andWhere($qb->expr()->orX(
+			$qb->expr()->like("m.username", ":q"),
+			$qb->expr()->like("m.email", ":q")
+		))
 	    ->setParameter("q","%$value%");
 	}
 
 	public function whereId(QueryBuilder $qb,$value){
-		$qb->andWhere($qb->expr()->eq("u.id", ":id"))
+		$qb->andWhere($qb->expr()->eq("m.id", ":id"))
 	    ->setParameter("id",$value);
 	}
 
-
-	public function count(){
-		return $this->createQueryBuilder('u')
-        ->select('count(u.id)')
-        ->getQuery()
-        ->getSingleScalarResult();
+	public function whereCode(QueryBuilder $qb,$value){
+		$qb->andWhere($qb->expr()->eq("m.code", ":code"))
+	    ->setParameter("code",$value);
 	}
+	public function whereParrainCode(QueryBuilder $qb,$value){
+		$qb->andWhere($qb->expr()->eq("parrain.code", ":parrain_code"))
+	    ->setParameter("parrain_code",$value);
+	}
+
+	public function whereQuality(QueryBuilder $qb,$value){
+		$qb->andWhere($qb->expr()->eq("type.code", ":type"))
+	    ->setParameter("type",$value);
+	}
+
+	public function whereCorporation(QueryBuilder $qb,$value){
+		$qb->andWhere($qb->expr()->eq("corporation.slug", ":corporation"))
+	    ->setParameter("corporation",$value);
+	}
+
+	public function whereDate(QueryBuilder $qb,$value){
+        $value = new \Datetime($value);
+
+        $qb->andWhere($qb->expr()->eq("DATE_FORMAT(m.createAt,'%Y-%m-%d')",":year_start"))
+        ->setParameter("year_start",$value->format("Y-m-d"));
+    }
+
+	public function whereDateRange(QueryBuilder $qb,$start,$end){
+
+        $start = new \Datetime($start);
+        $end = new \Datetime($end);
+
+		$qb->andWhere(
+			$qb->expr()->between("DATE_FORMAT(m.createAt,'%Y-%m-%d')",":year_start",":year_end")
+		)
+        ->setParameter("year_start",$start->format("Y-m-d"))
+        ->setParameter("year_end",$end->format("Y-m-d"));
+  	}
+
+	public function count(array $params = array() ){
+        $qb = $this->createQueryBuilder('m')
+		->leftJoin("m.parrain","parrain")
+        ->innerJoin("m.corporation","corporation")
+        ->innerJoin("m.type","type");
+
+        $qb
+        ->select('count(m.id)');
+
+        $this->addWhereClause($qb, $params);
+
+        return $qb->getQuery()
+        ->getSingleScalarResult();
+    }
 }

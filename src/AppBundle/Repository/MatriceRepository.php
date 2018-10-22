@@ -493,4 +493,270 @@ class MatriceRepository extends \Doctrine\ORM\EntityRepository
         return $qb->getQuery()
         ->getSingleScalarResult();
     }
+
+    public function generateBonus(array $params = array() ){
+
+		$em = $this->_em;
+
+		$sql = "
+			SELECT 
+			SUM(
+				(
+					SELECT 
+					SUM(
+						cc.value * 
+			    		(
+			    			SELECT CASE 
+			        		WHEN mt.code = 'NC'
+			        		THEN
+			        		(
+			        			SELECT CASE 
+								WHEN :current_user_type = 'M' 	THEN 0.18 
+								WHEN :current_user_type = 'MA' 	THEN 0.13
+								WHEN :current_user_type = 'A' 	THEN 0.08
+								WHEN :current_user_type = 'AA' 	THEN 0.05
+								ELSE 0
+								END as etff
+			        		)
+			        		ELSE 0
+			        		END as etf
+			        	)
+					)
+					FROM  case_credit cc 
+					WHERE 
+					( 
+						membre.id = cc.fbo_id 
+					)
+				)
+			) as bonus_novus_customer,
+
+			SUM( 
+				(
+					SELECT 
+					SUM( 
+			    		(
+			    			SELECT CASE
+			    			WHEN :current_user_type = 'M' 
+			    			THEN
+			    			(
+				    			SELECT CASE 
+				        		WHEN mt.code = 'MA' AND m.depth = :current_user_depth + 1
+				        		THEN
+				        		(
+				        			(cc.value * 0.05)
+				        			+
+				        			(
+					        			0.05 * 
+
+					        			(
+					        				SELECT
+					        				SUM(
+					        					(
+					        						SELECT 
+					        						SUM(cc2.value)
+					        						FROM  case_credit cc2 
+													WHERE 
+													( 
+														m2.membre_id = cc2.fbo_id 
+													)
+					        					)
+					        				)
+					        				FROM matrice m2
+											WHERE 
+											(
+												(m2.left_ind > m.left_ind AND m2.right_ind < m.right_ind)
+											)
+					        			)
+					        		)
+				        		)
+				        		WHEN mt.code = 'A' AND m.depth = :current_user_depth + 1
+				        		THEN
+				        		(
+				        			(cc.value * 0.1)
+				        			+
+				        			(
+					        			0.1 * 
+
+					        			(
+					        				SELECT
+					        				SUM(
+					        					(
+					        						SELECT 
+					        						SUM(cc2.value)
+					        						FROM  case_credit cc2 
+													WHERE 
+													( 
+														m2.membre_id = cc2.fbo_id 
+													)
+					        					)
+					        				)
+					        				FROM matrice m2
+											WHERE 
+											(
+												(m2.left_ind > m.left_ind AND m2.right_ind < m.right_ind)
+											)
+					        			)
+					        		)
+				        		)
+				        		WHEN mt.code = 'AA' AND m.depth = :current_user_depth + 1
+				        		THEN
+				        		(
+				        			(cc.value * 0.13)
+				        			+
+				        			(
+					        			0.13 * 
+
+					        			(
+					        				SELECT
+					        				SUM(
+					        					(
+					        						SELECT 
+					        						SUM(cc2.value)
+					        						FROM  case_credit cc2 
+													WHERE 
+													( 
+														m2.membre_id = cc2.fbo_id 
+													)
+					        					)
+					        				)
+					        				FROM matrice m2
+											WHERE 
+											(
+												(m2.left_ind > m.left_ind AND m2.right_ind < m.right_ind)
+											)
+					        			)
+					        		)
+				        		)
+				        		ELSE 0
+				        		END as etf
+				        	)
+				        	WHEN :current_user_type = 'MA' 
+			    			THEN
+			    			(
+				    			SELECT CASE 
+				        		WHEN mt.code = 'A' AND m.depth = :current_user_depth + 1
+				        		THEN
+				        		(
+				        			(cc.value * 0.05)
+				        			+
+				        			(
+					        			0.05 * 
+
+					        			(
+					        				SELECT
+					        				SUM(
+					        					(
+					        						SELECT 
+					        						SUM(cc2.value)
+					        						FROM  case_credit cc2 
+													WHERE 
+													( 
+														m2.membre_id = cc2.fbo_id 
+													)
+					        					)
+					        				)
+					        				FROM matrice m2
+											WHERE 
+											(
+												(m2.left_ind > m.left_ind AND m2.right_ind < m.right_ind)
+											)
+					        			)
+					        		)
+				        		)
+				        		WHEN mt.code = 'AA' AND m.depth = :current_user_depth + 1
+				        		THEN
+				        		(
+				        			(cc.value * 0.08)
+				        			+
+				        			(
+					        			0.08 * 
+
+					        			(
+					        				SELECT
+					        				SUM(
+					        					(
+					        						SELECT 
+					        						SUM(cc2.value)
+					        						FROM  case_credit cc2 
+													WHERE 
+													( 
+														m2.membre_id = cc2.fbo_id 
+													)
+					        					)
+					        				)
+					        				FROM matrice m2
+											WHERE 
+											(
+												(m2.left_ind > m.left_ind AND m2.right_ind < m.right_ind)
+											)
+					        			)
+					        		)
+				        		)
+				        		ELSE 0
+				        		END as etf
+				        	)
+				        	WHEN :current_user_type = 'A' 
+			    			THEN
+			    			(
+				    			SELECT CASE 
+				        		WHEN mt.code = 'AA' AND m.depth = :current_user_depth + 1
+				        		THEN
+				        		(
+				        			(cc.value * 0.03)
+				        			+
+				        			(
+					        			0.03 * 
+
+					        			(
+					        				SELECT
+					        				SUM(
+					        					(
+					        						SELECT 
+					        						SUM(cc2.value)
+					        						FROM  case_credit cc2 
+													WHERE 
+													( 
+														m2.membre_id = cc2.fbo_id 
+													)
+					        					)
+					        				)
+					        				FROM matrice m2
+											WHERE 
+											(
+												(m2.left_ind > m.left_ind AND m2.right_ind < m.right_ind)
+											)
+					        			)
+					        		)
+				        		)
+				        		ELSE 0
+				        		END as etf
+				        	)
+				        	ELSE 0
+				        	END as oiu
+			        	)
+					)
+					FROM  case_credit cc 
+					WHERE 
+					( 
+						membre.id = cc.fbo_id 
+					)
+				)
+			) as bonus_group
+
+			FROM matrice m 
+			INNER JOIN membre ON membre.id = m.membre_id
+			INNER JOIN membre_type mt ON mt.id = membre.type_id
+			LEFT JOIN corporation  ON corporation.id = membre.corporation_id
+			LEFT JOIN membre parrain  ON parrain.id = membre.parrain_id
+			WHERE 
+			(
+				(m.left_ind > :left_ind AND m.right_ind < :right_ind)
+			)
+		";
+
+		$stmt = $em->getConnection()->prepare($sql);
+    	$stmt->execute($params);
+     
+    	return $stmt->fetchAll()[0];
+    }
 }
