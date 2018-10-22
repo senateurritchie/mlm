@@ -1,0 +1,80 @@
+{% form_theme form 'bootstrap_3_layout.html.twig' %}
+
+{% if use_modal == 'insert' %}
+    <div class="modal fade modal-form" id="modal-insert" role="dialog" aria-labelledby="Enregistrer un case crédit" aria-describedby="">
+{% else %}
+    <div class="modal fade modal-form" id="modal-update" data-id="{{ data.id }}" role="dialog" aria-labelledby="modifier un case crédit" aria-describedby="">
+{% endif %}
+
+	<div class="modal-dialog"  role="document">
+	    <div class="modal-content" >
+	        <div class="modal-header bg-purple">
+	            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+	                <span aria-hidden="true">×</span>
+	            </button>
+	            <h4 class="modal-title">
+	                
+	                {% if use_modal == 'insert' %}
+	                	Enregistrer un case crédit
+					{% else %}
+						Modifier un case crédit
+					{% endif %}
+	            </h4>
+	        </div>
+	        
+	        {{ form_start(form) }}
+	            <div class="modal-body" style="height:auto">
+
+	            	{% if use_modal != 'insert' %}
+	            		<div class="alert bg-purple">
+	            			<h4>FBO:</h4>
+
+	            			<div>
+	            				{{ data.fbo.civility }} {{ data.fbo.username }}
+	            			</div>
+
+	            			<div class="text" style="font-size:24px">
+	            			 	{{ data.code }}
+	            			</div>
+	            		</div>
+					  
+					{% endif %}
+					
+					<div class="row">
+						<div class="col-md-6">
+							{{ form_row(form.idFbo) }}
+						</div>
+
+						<div class="col-md-3">
+							{{ form_row(form.value) }}
+						</div>
+
+						<div class="col-md-3">
+							{{ form_row(form.date) }}
+						</div>
+					</div>
+	            </div>
+				
+
+	            <div class="modal-footer">
+
+	                <div class="pull-left">
+
+		                <button type="button" class="btn bg-purple" data-dismiss="modal">
+	                        Quitter
+	                    </button>
+
+	                </div>
+	                
+	                <button class="btn bg-purple pull-right">
+	                    <i class="fa fa-save"></i> Enregistrer
+	                </button>
+	            </div>
+	        {{ form_end(form) }}
+
+	        <div class="overlay">
+      			<i class="fa fa-spinner fa-spin fa-5x"></i>
+    		</div>
+	    </div>
+	</div>
+</div>

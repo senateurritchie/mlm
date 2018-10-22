@@ -1,0 +1,59 @@
+{% for item in storage %}
+	<tr class="data-item" data-id="{{ item.id }}">
+		<td class="data-item-image">
+			{% if item.fbo.image %}
+				<img  style="height: 50px;" src="{{ asset('upload/public/'~item.fbo.image) }}" alt="" />
+				
+			{% else %}
+				<img  style="height: 50px;" src="{{ asset('img/vignette-landscape.png') }}">
+			{% endif %}
+		</td>
+
+		<td>
+			<a href="" class="edit">
+				{{ item.fbo.civility }}. {{ item.fbo.username|lower|title }}
+			</a>
+		</td>
+
+		<td>
+			{{ item.fbo.code }}
+		</td>
+
+		<td style="text-align:center">{{ item.value }}</td>
+
+		<td>
+    		{{ item.date|date('d M Y') }}
+		</td>
+
+		<td>
+    		{{ item.createAt|date('d M Y à H:i') }}
+		</td>
+
+		<td>
+    		{{ item.admin.civility }}. {{ item.admin.username|lower|title }}
+		</td>
+
+		<td>
+			<div class="btn-group">
+            	<button type="button" class="btn bg-purple btn-flat">Menu</button>
+              	<button type="button" class="btn bg-purple btn-flat dropdown-toggle" data-toggle="dropdown">
+                	<span class="caret"></span>
+                	<span class="sr-only">Toggle Dropdown</span>
+              	</button>
+              	<ul class="dropdown-menu pull-right" role="menu">
+                	<li>
+                		<a href="{{ path('admin_user_index',{'user_id':item.fbo.id})}}">
+                			Afficher son tableau de bord
+                		</a>
+                	</li>
+                 	<li class="divider"></li>
+                 	<li>
+                		<a href="" class="edit">
+                			Modifier
+                		</a>
+                	</li>
+              </ul>
+            </div>
+		</td>
+	</tr>
+{% endfor %}
